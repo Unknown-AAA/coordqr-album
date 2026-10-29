@@ -76,7 +76,7 @@ const BUCKET='coord-images';
 const PUBLIC_OUTFIT_BUCKET='coord-outfit-public';
 const $=id=>document.getElementById(id);
 let sb=null,user=null,entries=[],setClosets=[],filter='すべて',busy=false,editReturnView='cardsPanel';
-const WAVE_OPTIONS={'ワッチャプリマジ！':['１章','２章','３章','４章','５章','６章','スタジオ１・２章','スタジオ３・４章','スタジオ５・６章','スタジオ７・８章','スタジオ９章','スタジオ１０章'],'アイプリバース':['ひみつ１弾','ひみつ２弾','ひみつ３弾','ひみつ４弾','ひみつ５弾','ひみつ６弾','リング１弾','リング２弾','リング３弾','リング４弾','リング５弾','リング６弾','おねがい１弾','おねがい２弾','おねがい３弾','おねがい４弾','おねがい５弾','おねがい６弾']};
+const WAVE_OPTIONS={'ワッチャプリマジ！':['１章','２章','３章','４章','５章','６章','スタジオ１・２章','スタジオ３・４章','スタジオ５・６章','スタジオ７・８章','スタジオ９章','スタジオ１０章','プロモ'],'アイプリバース':['ひみつ１弾','ひみつ２弾','ひみつ３弾','ひみつ４弾','ひみつ５弾','ひみつ６弾','リング１弾','リング２弾','リング３弾','リング４弾','リング５弾','リング６弾','おねがい１弾','おねがい２弾','おねがい３弾','おねがい４弾','おねがい５弾','おねがい６弾','プロモ']};
 const RARITY_OPTIONS={'ワッチャプリマジ！':['R','SR','UR','PMR','HR','OPQR'],'アイプリバース':['☆2','☆3','☆4','スペシャル']};
 const PART_OPTIONS=['未分類','トップス','ボトムス','シューズ','アクセサリー','ワンピース','フルコーデ','フレンドカード'];
 function fillWaves(select,game,selected=''){select.replaceChildren();const first=document.createElement('option');first.value='';first.textContent='未設定';select.append(first);for(const w of (WAVE_OPTIONS[game]||[])){const o=document.createElement('option');o.value=w;o.textContent=w;select.append(o)}if(selected&&!Array.from(select.options).some(o=>o.value===selected)){const o=document.createElement('option');o.value=selected;o.textContent=selected+'（登録済み）';select.append(o)}select.value=selected;}
@@ -139,7 +139,7 @@ $('closeModal').onclick=closeQr;$('modal').onclick=e=>{if(e.target===$('modal'))
 function edit(x,fromView='cardsPanel'){editReturnView=fromView;showView('entryPanel');$('entryId').value=x.id;$('game').value=x.game;$('name').value=x.name;$('setName').value=x.set_name||x.name;$('accessoryOptional').checked=x.accessory_optional===true;fillWaves($('wave'),$('game').value,x.wave||'');$('partType').value=x.part_type||'未分類';fillRarities(x.rarity||'');$('cardNumber').value=x.card_number||'';$('isOwned').value=x.is_owned===false?'false':'true';if($('missingSide'))$('missingSide').value=x.missing_side==='熱望'?'熱望':'求';renderCharacterChoices(characterNamesFromText(x.character_name||''));$('quantity').value=String(x.is_owned===false?0:Number(x.quantity??1));syncOwnedQuantity();$('isFavorite').checked=x.is_favorite===true;$('exchangeRate').value=String(Number(x.exchange_rate)||0);refreshChips();$('notes').value=x.notes||'';$('outfit').value='';$('outfitUrl').value=x.outfit_public_path&&/^https?:\/\//i.test(x.outfit_public_path)?x.outfit_public_path:'';$('qr').value='';$('formTitle').textContent='コーデを編集';$('save').textContent='変更を保存';$('cancel').classList.remove('hidden');$('entryForm').scrollIntoView({behavior:'smooth',block:'start'})}
 async function changeQuantity(x,value){if(x.is_owned===false){msg('appMsg','持っていないコーデの所持数は0に固定されています。','');return}value=Math.max(1,Math.min(9999,Number(value)||1));const {error}=await sb.from('coord_entries').update({quantity:value,is_owned:true}).eq('id',x.id);if(error){msg('appMsg','所持数の更新失敗：'+error.message,'error');return}x.quantity=value;x.is_owned=true;render();if(closetCharacter)renderClosetCards()}
 async function remove(x){if(!confirm('「'+x.name+'」を削除しますか？画像も削除されます。'))return;let {error}=await sb.from('coord_entries').delete().eq('id',x.id);if(error){msg('appMsg','削除失敗：'+error.message,'error');return}let p=[x.outfit_path,x.qr_path].filter(Boolean);if(p.length)await sb.storage.from(BUCKET).remove(p);if(x.outfit_public_path)await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([x.outfit_public_path]);msg('appMsg','削除しました。','success');await load()}
-function refreshListFilters(){const game=filter==='すべて'?'':filter;const rarSel=$('rarityFilter'),oldR=rarSel.value;rarSel.replaceChildren();const ra=document.createElement('option');ra.value='all';ra.textContent='レアリティ：すべて';rarSel.append(ra);const rarities=game?(RARITY_OPTIONS[game]||[]):[...new Set(Object.values(RARITY_OPTIONS).flat())];for(const r of rarities){const o=document.createElement('option');o.value=r;o.textContent=r;rarSel.append(o)}rarSel.value=rarities.includes(oldR)?oldR:'all';const sel=$('waveFilter'),old=sel.value;sel.replaceChildren();const all=document.createElement('option');all.value='all';all.textContent='シリーズ：すべて';sel.append(all);let waves=[...new Set(entries.filter(x=>!game||x.game===game).map(x=>x.wave).filter(Boolean))];if(game==='ワッチャプリマジ！')waves=waves.filter(w=>w.endsWith('章'));else if(game==='アイプリバース')waves=waves.filter(w=>w.endsWith('弾'));waves.sort((a,b)=>a.localeCompare(b,'ja'));for(const w of waves){const o=document.createElement('option');o.value=w;o.textContent=w;sel.append(o)}sel.value=waves.includes(old)?old:'all'}
+function refreshListFilters(){const game=filter==='すべて'?'':filter;const rarSel=$('rarityFilter'),oldR=rarSel.value;rarSel.replaceChildren();const ra=document.createElement('option');ra.value='all';ra.textContent='レアリティ：すべて';rarSel.append(ra);const rarities=game?(RARITY_OPTIONS[game]||[]):[...new Set(Object.values(RARITY_OPTIONS).flat())];for(const r of rarities){const o=document.createElement('option');o.value=r;o.textContent=r;rarSel.append(o)}rarSel.value=rarities.includes(oldR)?oldR:'all';const sel=$('waveFilter'),old=sel.value;sel.replaceChildren();const all=document.createElement('option');all.value='all';all.textContent='シリーズ：すべて';sel.append(all);let waves=[...new Set(entries.filter(x=>!game||x.game===game).map(x=>x.wave).filter(Boolean))];if(game==='ワッチャプリマジ！')waves=waves.filter(w=>w==='プロモ'||w.endsWith('章'));else if(game==='アイプリバース')waves=waves.filter(w=>w==='プロモ'||w.endsWith('弾'));waves.sort((a,b)=>a.localeCompare(b,'ja'));for(const w of waves){const o=document.createElement('option');o.value=w;o.textContent=w;sel.append(o)}sel.value=waves.includes(old)?old:'all'}
 function render(){refreshListFilters();renderCore()}
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(t=>t.classList.toggle('active',t===b));render()});$('search').oninput=render;$('sort').onchange=render;$('ownedFilter').onchange=render;$('rarityFilter').onchange=render;$('waveFilter').onchange=render;
 let closetCharacter='';
@@ -162,9 +162,9 @@ const EX_RARITY={
 const EX_SERIES={
  'ワッチャプリマジ！':WAVE_OPTIONS['ワッチャプリマジ！'],
  'アイプリバース':WAVE_OPTIONS['アイプリバース'],
- 'ひみつのアイプリ':WAVE_OPTIONS['アイプリバース'].filter(x=>x.startsWith('ひみつ')||x.startsWith('リング')),
- 'おねがいアイプリ':WAVE_OPTIONS['アイプリバース'].filter(x=>x.startsWith('おねがい')),
- 'アイカツアンコール':['１だん','２だん','３だん','４だん','５だん','６だん']
+ 'ひみつのアイプリ':[...WAVE_OPTIONS['アイプリバース'].filter(x=>x.startsWith('ひみつ')||x.startsWith('リング')),'プロモ'],
+ 'おねがいアイプリ':['おねがい１弾','おねがい２弾','おねがい３弾','おねがい４弾','おねがい５弾','おねがい６弾','プロモ'],
+ 'アイカツアンコール':['１だん','２だん','３だん','４だん','５だん','６だん','プロモ']
 };
 const EX_PART={
  'ワッチャプリマジ！':['トップス','ボトムス','シューズ','アクセサリー','ワンピース'],
@@ -190,7 +190,7 @@ function selectedValues(value){return (value||'').split(/[、,，]+/).map(v=>v.t
 function multiCheckboxGroup(containerId,selectId,values,selectedValue=''){
  const root=$(containerId),selected=new Set(selectedValues(selectedValue));root.replaceChildren();
  const items=[...(values||[])];
- for(const labelText of items){const value=labelText;const lab=document.createElement('label');lab.className='checkchip';const cb=document.createElement('input');cb.type='checkbox';cb.checked=selected.has(value);cb.addEventListener('change',()=>{if(!value&&cb.checked){root.querySelectorAll('input').forEach(other=>{if(other!==cb)other.checked=false})}else if(value&&cb.checked){const empty=root.querySelector('input');if(empty)empty.checked=false}const vals=[...root.querySelectorAll('input:checked')].map(el=>el.value).filter(Boolean);const combined=vals.join('、');if(combined&&!Array.from($(selectId).options).some(o=>o.value===combined)){const opt=document.createElement('option');opt.value=combined;opt.textContent=combined;$(selectId).append(opt)}$(selectId).value=combined;});cb.value=value;lab.append(cb,document.createTextNode(labelText));root.append(lab)}
+ for(const labelText of items){const value=labelText;const lab=document.createElement('label');lab.className='checkchip';const cb=document.createElement('input');cb.type='checkbox';cb.value=value;cb.checked=selected.has(value);cb.addEventListener('change',()=>{if(!value&&cb.checked){root.querySelectorAll('input').forEach(other=>{if(other!==cb)other.checked=false})}else if(value&&cb.checked){const empty=root.querySelector('input');if(empty)empty.checked=false}const vals=[...root.querySelectorAll('input:checked')].map(el=>el.value).filter(Boolean);const combined=vals.join('、');if(combined&&!Array.from($(selectId).options).some(o=>o.value===combined)){const opt=document.createElement('option');opt.value=combined;opt.textContent=combined;$(selectId).append(opt)}$(selectId).value=combined;});cb.value=value;lab.append(cb,document.createTextNode(labelText));root.append(lab)}
 }
 function refreshExchangeFields(row={}){
  const g=$('exGame').value;const rarity=row.rarity||'',series=row.series||'',part=row.part_type||'',type=row.type_name||row.pattern_type||'';
@@ -232,14 +232,73 @@ function renderAutoExchangeEntries(){const root=$('autoExchangeEntries');if(!roo
 function resetExchangeForm(){ $('exchangeForm').reset();$('exchangeId').value='';$('exSide').value='熱望';$('exQuantity').value='1';$('exRate').value='0';$('exImage').value='';$('exImageUrl').value='';$('exchangeFormTitle').textContent='交換用カードを追加';$('saveExchange').textContent='保存する';$('cancelExchange').classList.add('hidden');refreshExchangeFields()}
 function editExchange(x){$('exchangeId').value=x.id;$('exSide').value=x.side;$('exGame').value=x.game;refreshExchangeFields(x);$('exName').value=x.name;$('exCharacter').value=x.character_name||'';refreshExchangeFields(x);$('exCharacter').value=x.character_name||'';$('exRarity').value=x.rarity||'';$('exSeries').value=x.series||'';$('exPart').value=x.part_type||'';$('exType').value=x.type_name||'';$('exSong').value=x.song||'';$('exQuantity').value=x.quantity||1;$('exRate').value=x.rate||0;$('exNotes').value=x.notes||'';$('exImageUrl').value=x.image_url||'';$('exchangeFormTitle').textContent='交換用カードを編集';$('saveExchange').textContent='変更を保存';$('cancelExchange').classList.remove('hidden');$('exchangeForm').scrollIntoView({behavior:'smooth',block:'start'})}
 $('cancelExchange').onclick=resetExchangeForm;
+let exchangeSaving=false;
 $('exchangeForm').onsubmit=async e=>{
- e.preventDefault();if(!user)return;const id=$('exchangeId').value;let imageUrl=exchangeEntries.find(x=>x.id===id)?.image_url||null;
+ e.preventDefault();
+ if(!user||exchangeSaving)return;
+ exchangeSaving=true;
+ const saveButton=$('saveExchange');
+ saveButton.disabled=true;
+ const originalLabel=saveButton.textContent;
+ saveButton.textContent='保存中…';
+ const id=$('exchangeId').value;
+ let uploadedExchangePath=null;
  try{
-  const linkedUrl=$('exImageUrl').value.trim();if(linkedUrl){let parsed;try{parsed=new URL(linkedUrl)}catch{throw Error('画像リンクの形式を確認してください。')}if(!['https:','http:'].includes(parsed.protocol))throw Error('画像リンクは http:// または https:// で始まるURLを指定してください。');imageUrl=linkedUrl}else{const f=$('exImage').files[0];if(f){if(f.size>8*1024*1024)throw Error('画像は8MB以下にしてください。');const path=`${user.id}/exchange-${crypto.randomUUID()}-${safeFile(f.name)}`;const up=await sb.storage.from('coord-exchange-images').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;const pub=sb.storage.from('coord-exchange-images').getPublicUrl(path);imageUrl=pub.data.publicUrl}}
-  const payload={user_id:user.id,side:$('exSide').value,game:$('exGame').value,name:$('exName').value.trim(),character_name:$('exCharacter').value.trim(),rarity:$('exRarity').value,series:$('exSeries').value,part_type:$('exPart').value,type_name:(()=>{const vals=selectedValues($('exType').value);if($('exGame').value==='アイプリバース'&&vals.length){const details=[...document.querySelectorAll('.type-quantity')].map(i=>`${i.dataset.type}×${Math.max(1,Number(i.value)||1)}`);const ch=$('exTypeCharacter').value.trim();return details.map(t=>t.startsWith('キャラクター')&&ch?`${t}（${ch}）`:t).join('、')}return $('exType').value})(),song:$('exSong').value.trim(),quantity:Math.max(1,Number($('exQuantity').value)||1),rate:Math.max(0,Number($('exRate').value)||0),notes:$('exNotes').value.trim(),image_url:imageUrl};
-  const r=id?await sb.from('coord_exchange_entries').update(payload).eq('id',id).select().single():await sb.from('coord_exchange_entries').insert(payload).select().single();if(r.error)throw r.error;
-  msg('exchangeMsg','交換用カードを保存しました。','success');resetExchangeForm();await loadExchangeEntries();
- }catch(err){msg('exchangeMsg','保存失敗：'+errorText(err)+'。交換用画像を使う場合は coord-exchange-images バケットも作成してください。','error')}
+  // 保存開始時点の入力値を固定し、画像アップロード中に値が変わっても内容が食い違わないようにする
+  const formValues={
+   side:$('exSide').value,game:$('exGame').value,name:$('exName').value.trim(),
+   character_name:$('exCharacter').value.trim(),rarity:$('exRarity').value,
+   series:$('exSeries').value,part_type:$('exPart').value,typeValue:$('exType').value,
+   typeCharacter:$('exTypeCharacter').value.trim(),song:$('exSong').value.trim(),
+   quantity:Math.max(1,Number($('exQuantity').value)||1),
+   rate:Math.max(0,Number($('exRate').value)||0),notes:$('exNotes').value.trim(),
+   linkedUrl:$('exImageUrl').value.trim(),file:$('exImage').files[0]||null
+  };
+  if(!formValues.name)throw Error('カード名を入力してください。');
+  let imageUrl=exchangeEntries.find(x=>x.id===id)?.image_url||null;
+  if(formValues.linkedUrl){
+   let parsed;try{parsed=new URL(formValues.linkedUrl)}catch{throw Error('画像リンクの形式を確認してください。')}
+   if(!['https:','http:'].includes(parsed.protocol))throw Error('画像リンクは http:// または https:// で始まるURLを指定してください。');
+   imageUrl=formValues.linkedUrl;
+  }else if(formValues.file){
+   const f=formValues.file;
+   if(f.size>8*1024*1024)throw Error('画像は8MB以下にしてください。');
+   const filePath=`${user.id}/exchange-${crypto.randomUUID()}-${safeFile(f.name)}`;
+   const up=await sb.storage.from('coord-exchange-images').upload(filePath,f,{contentType:f.type,upsert:false});
+   if(up.error)throw up.error;
+   uploadedExchangePath=filePath;
+   imageUrl=sb.storage.from('coord-exchange-images').getPublicUrl(filePath).data.publicUrl;
+  }
+  const typeName=(()=>{
+   const vals=selectedValues(formValues.typeValue);
+   if(formValues.game==='アイプリバース'&&vals.length){
+    const details=[...document.querySelectorAll('.type-quantity')].map(i=>`${i.dataset.type}×${Math.max(1,Number(i.value)||1)}`);
+    return details.map(t=>t.startsWith('キャラクター')&&formValues.typeCharacter?`${t}（${formValues.typeCharacter}）`:t).join('、');
+   }
+   return formValues.typeValue;
+  })();
+  const payload={
+   user_id:user.id,side:formValues.side,game:formValues.game,name:formValues.name,
+   character_name:formValues.character_name,rarity:formValues.rarity,series:formValues.series,
+   part_type:formValues.part_type,type_name:typeName,song:formValues.song,
+   quantity:formValues.quantity,rate:formValues.rate,notes:formValues.notes,image_url:imageUrl
+  };
+  const result=id
+   ?await sb.from('coord_exchange_entries').update(payload).eq('id',id).select().single()
+   :await sb.from('coord_exchange_entries').insert(payload).select().single();
+  if(result.error)throw result.error;
+  uploadedExchangePath=null; // DB保存成功。アップロード画像を残す
+  msg('exchangeMsg','交換用カードを保存しました。','success');
+  resetExchangeForm();
+  await loadExchangeEntries();
+ }catch(err){
+  if(uploadedExchangePath)await sb.storage.from('coord-exchange-images').remove([uploadedExchangePath]);
+  msg('exchangeMsg','保存失敗：'+errorText(err)+'。入力内容は保持しているので、内容を確認して再度保存してください。','error');
+ }finally{
+  exchangeSaving=false;
+  saveButton.disabled=false;
+  saveButton.textContent=originalLabel;
+ }
 };
 async function deleteExchange(x){if(!confirm('「'+x.name+'」を削除しますか？'))return;const {error}=await sb.from('coord_exchange_entries').delete().eq('id',x.id);if(error){msg('exchangeMsg',error.message,'error');return}await loadExchangeEntries()}
 $('makeExchangeLink').onclick=async()=>{
