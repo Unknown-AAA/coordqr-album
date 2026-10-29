@@ -1,2 +1,2 @@
-# coordqr-album
-コーデQRアルバム
+# coord-album
+コーデアルバム
