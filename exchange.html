@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff0f7"><title>コーデアルバム｜交換用アルバム</title>
+<style>
+:root{--ink:#55475a;--muted:#8e7f91;--bg:#fff9fc;--line:#f2dce9;--pink:#e99abe;--pinkp:#ffe8f2;--blue:#8bbce8;--bluep:#eaf5ff;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff4fa,#fff 320px);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif}header{padding:25px 16px;text-align:center;background:linear-gradient(135deg,#ffe4f0,#fff 60%,#edf6ff);border-bottom:1px solid var(--line)}.eyebrow{font-size:.75rem;letter-spacing:.14em;color:#cf82a6;font-weight:800}.brand{font-size:1.55rem;font-weight:900;margin:6px}.muted{color:var(--muted);font-size:.9rem;line-height:1.7}main{max-width:900px;padding:14px;margin:auto}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;margin:13px 0;box-shadow:0 8px 24px #bd7ea40b}h2{font-size:1.1rem;margin:0 0 12px}button{font:inherit;border:0;border-radius:12px;padding:11px 15px;background:var(--pink);color:white;font-weight:800;cursor:pointer}button.alt{background:var(--pinkp);color:#a6577c}button.blue{background:var(--blue);color:#fff}button:disabled{opacity:.45}.hidden{display:none!important}.disclosure{background:#fff8fc;border:1px dashed #e9b5d0;border-radius:13px;padding:12px;margin:10px 0}.disclosure p{margin:8px 0;font-size:.88rem;line-height:1.65}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}.card.selected{outline:2px solid var(--pink);background:#fff8fc}.card.offer.selected{outline-color:var(--blue);background:#f7fbff}.thumb{width:100%;height:150px;object-fit:contain;background:#fff5fa}.body{padding:10px}.tag{display:inline-block;border-radius:999px;background:var(--pinkp);color:#a6577c;padding:4px 8px;font-size:.75rem;font-weight:800}.tag.offer{background:var(--bluep);color:#477ba9}.title{font-weight:850;margin:7px 0;overflow-wrap:anywhere}.meta{font-size:.82rem;color:var(--muted);line-height:1.6}.pick{display:flex;gap:7px;align-items:center;margin-top:10px;font-size:.9rem;font-weight:750}.pick input{width:18px;height:18px;accent-color:#d981aa}.offer .pick input{accent-color:#75aee1}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.notice{background:#fff3f8;border-radius:11px;padding:10px;font-size:.85rem;line-height:1.6;color:#8e5874}.notice.blue{background:#eff7ff;color:#4d7194}.bars{display:grid;gap:10px;margin:14px 0}.barrow{display:grid;grid-template-columns:70px 1fr 60px;gap:8px;align-items:center;font-size:.82rem}.track{height:16px;background:#f3edf2;border-radius:99px;overflow:hidden}.bar{height:100%;border-radius:99px;min-width:0}.bar.pink{background:linear-gradient(90deg,#f6c3dc,#df83b0)}.bar.blue{background:linear-gradient(90deg,#b9ddff,#75aee1)}.empty{text-align:center;color:var(--muted);padding:22px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}footer{text-align:center;color:var(--muted);font-size:.78rem;padding:18px}@media(max-width:560px){.cards{grid-template-columns:1fr}.thumb{height:180px}.panel{padding:13px}.brand{font-size:1.35rem}}
+</style>
+</head><body>
+<header><div class="eyebrow">✧ PRIVATE COLLECTION EXCHANGE ✧</div><div class="brand">♡ 交換用アルバム ♡</div><div class="muted">大切なコレクションを、気持ちよく交換するために。</div></header>
+<main>
+<section id="intro" class="panel">
+<h2>交換を始める前にご確認ください</h2>
+<div class="disclosure">
+<p>♡ カードは再譲渡する可能性があります。ご了承ください。</p>
+<p>♡ おおよそのレートはフリマアプリを参考にしておりますが、更新が追いつかず実際のレートと乖離してしまう場合がございます。ご了承ください。</p>
+<p>♡ このページでは、閲覧者の名前・メールアドレスなどの入力を求めません。選択内容を交換履歴として保存することもありません。交換内容の確認URLには、選択したカード情報が含まれます。</p>
+<p>♡ 交換方法は「Yahoo!フリマ」の交換機能を使用し、「ゆうパケットポストmini」での発送を基本とします。枚数によっては発送方法を変更する場合があります。</p>
+</div><button id="agree">わかりました</button>
+</section>
+<section id="requestStep" class="panel hidden"><h2>① 求・熱望のカード</h2><p class="muted">交換に出せるカードを選択してください。選択しなくても次へ進めます。</p><div id="requests" class="cards"></div><div id="requestsEmpty" class="empty hidden">現在、求・熱望の登録はありません。</div><div class="actions"><button id="toOffers">譲可能品を見る →</button></div></section>
+<section id="offerStep" class="panel hidden"><h2>② 譲可能品</h2><p class="muted">希望するカードをすべて選択してください。</p><div id="offers" class="cards"></div><div id="offersEmpty" class="empty hidden">現在、譲可能品の登録はありません。</div><div class="actions"><button id="backRequests" class="alt">← 求・熱望に戻る</button><button id="confirm" class="blue">交換内容を確認する</button></div></section>
+<section id="confirmStep" class="panel hidden"><h2>③ 交換内容の確認</h2><p>こちらの内容でよろしいですか？</p><div class="bars"><div class="barrow"><span>相手に提供</span><div class="track"><div id="requestBar" class="bar pink"></div></div><strong id="requestTotal">0</strong></div><div class="barrow"><span>こちらが希望</span><div class="track"><div id="offerBar" class="bar blue"></div></div><strong id="offerTotal">0</strong></div></div><div id="confirmContent"></div><p id="balance" class="notice"></p><div class="actions"><button id="no" class="alt">いいえ、戻る</button><button id="yes">はい、URLを作成</button></div></section>
+<section id="resultStep" class="panel hidden"><h2>交換内容の確認URL</h2><p class="muted">このURLをコピーして、交換相手本人に送ってください。URLを知っている人は内容を閲覧できます。</p><textarea id="resultUrl" readonly style="width:100%;min-height:100px;border:1px solid var(--line);border-radius:10px;padding:10px"></textarea><div class="actions"><button id="copyResult">URLをコピー</button><button id="restart" class="alt">最初に戻る</button></div></section>
+<section id="sharedResult" class="panel hidden"><h2>交換内容（確認用）</h2><p class="muted">このページはURLに含まれる交換内容を表示しています。</p><div id="sharedContent"></div></section>
+<section id="errorPanel" class="panel hidden"><h2>ページを表示できません</h2><p id="errorText" class="muted">共有URLが無効か、公開が停止されています。</p></section>
+</main><footer>個人制作の交換用ページ ✧ QRコード画像やログイン情報は公開しません。</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL='https://bwxavexarxvyiidokyms.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_f3AV7dlraKufoG6qhWL5xA_eRvdA9OI';
+const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+let data={requests:[],manual_offers:[],owned_offers:[]},canOffer=new Set(),want=new Set();
+function hideAll(){for(const id of ['intro','requestStep','offerStep','confirmStep','resultStep','sharedResult','errorPanel'])$(id).classList.add('hidden')}
+function makeCard(x,kind,selected,setter){
+ const c=document.createElement('article');c.className='card'+(kind==='offer'?' offer':'')+(selected.has(String(x.id))?' selected':'');
+ if(x.image_url){const im=document.createElement('img');im.className='thumb';im.src=x.image_url;im.alt='カード画像';im.loading='lazy';c.append(im)}
+ const b=document.createElement('div');b.className='body';const tag=document.createElement('span');tag.className='tag'+(kind==='offer'?' offer':'');tag.textContent=(kind==='offer'?'譲':'求・熱望')+' ・ '+(x.game||'');const title=document.createElement('div');title.className='title';title.textContent=x.name||'名称未設定';const meta=document.createElement('div');meta.className='meta';meta.textContent=[x.character_name,x.rarity,x.series,x.part_type,x.type_name,x.song,`枚数：${x.quantity||1}`,`レート：${Number(x.rate)||0}`,x.notes].filter(Boolean).join(' ・ ');const lab=document.createElement('label');lab.className='pick';const cb=document.createElement('input');cb.type='checkbox';cb.checked=selected.has(String(x.id));cb.addEventListener('change',()=>{if(cb.checked)setter.add(String(x.id));else setter.delete(String(x.id));c.classList.toggle('selected',cb.checked)});lab.append(cb,document.createTextNode(kind==='offer'?'このカードが欲しい':'このカードを提供できる'));b.append(tag,title,meta,lab);c.append(b);return c
+}
+function renderList(rootId,emptyId,items,kind,selected,setter){const root=$(rootId);root.replaceChildren();$(emptyId).classList.toggle('hidden',items.length>0);for(const x of items)root.append(makeCard(x,kind,selected,setter))}
+function offers(){return [...data.manual_offers,...data.owned_offers]}
+$('agree').onclick=()=>{hideAll();$('requestStep').classList.remove('hidden')};
+$('toOffers').onclick=()=>{renderList('offers','offersEmpty',offers(),'offer',want,want);hideAll();$('offerStep').classList.remove('hidden')};
+$('backRequests').onclick=()=>{renderList('requests','requestsEmpty',data.requests,'request',canOffer,canOffer);hideAll();$('requestStep').classList.remove('hidden')};
+function itemSummary(items,title){const box=document.createElement('div');box.className='panel';const h=document.createElement('h2');h.textContent=title;box.append(h);if(!items.length){const p=document.createElement('p');p.className='muted';p.textContent='選択なし';box.append(p)}for(const x of items){const p=document.createElement('p');p.textContent=`${x.name}（${x.game}） × ${x.quantity||1} ／ レート ${Number(x.rate)||0}`;box.append(p)}return box}
+$('confirm').onclick=()=>{
+ const req=data.requests.filter(x=>canOffer.has(String(x.id))),off=offers().filter(x=>want.has(String(x.id)));
+ const rt=req.reduce((a,x)=>a+(Number(x.rate)||0)*(Number(x.quantity)||1),0),ot=off.reduce((a,x)=>a+(Number(x.rate)||0)*(Number(x.quantity)||1),0);
+ $('requestTotal').textContent=String(rt);$('offerTotal').textContent=String(ot);
+ const max=Math.max(rt,ot,1);$('requestBar').style.width=(rt/max*100)+'%';$('offerBar').style.width=(ot/max*100)+'%';
+ const content=$('confirmContent');content.replaceChildren(itemSummary(req,'こちらが提供できるカード'),itemSummary(off,'こちらが希望するカード'));
+ $('balance').textContent=rt===ot?'レート合計は同じです。':`レート差：${Math.abs(rt-ot)}（${rt>ot?'提供側':'希望側'}の合計が大きい状態です）。レートは目安として確認してください。`;
+ hideAll();$('confirmStep').classList.remove('hidden')
+};
+$('no').onclick=()=>{hideAll();$('offerStep').classList.remove('hidden')};
+function encode(obj){const bytes=new TextEncoder().encode(JSON.stringify(obj));let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function decode(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s),bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes))}
+$('yes').onclick=()=>{
+ const req=data.requests.filter(x=>canOffer.has(String(x.id))),off=offers().filter(x=>want.has(String(x.id)));
+ const payload={created_at:new Date().toISOString(),provided:req.map(clean),wanted:off.map(clean)};
+ const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',encode(payload));$('resultUrl').value=u.href;
+ hideAll();$('resultStep').classList.remove('hidden')
+};
+function clean(x){return {name:x.name,game:x.game,character_name:x.character_name||'',rarity:x.rarity||'',series:x.series||'',part_type:x.part_type||'',quantity:x.quantity||1,rate:Number(x.rate)||0,image_url:x.image_url||null}}
+$('copyResult').onclick=async()=>{try{await navigator.clipboard.writeText($('resultUrl').value);alert('URLをコピーしました')}catch{$('resultUrl').select();alert('URL欄を選択してコピーしてください')}};
+$('restart').onclick=()=>{canOffer.clear();want.clear();hideAll();$('intro').classList.remove('hidden')};
+function showSummary(payload){const root=$('sharedContent');root.replaceChildren();const req=payload.provided||[],off=payload.wanted||[];const sum=(xs)=>xs.reduce((a,x)=>a+(Number(x.rate)||0)*(Number(x.quantity)||1),0);const rt=sum(req),ot=sum(off);const p=document.createElement('p');p.className='notice';p.textContent=`提供側レート合計：${rt} ／ 希望側レート合計：${ot} ／ 差：${Math.abs(rt-ot)}`;root.append(p,itemSummary(req,'こちらが提供できるカード'),itemSummary(off,'こちらが希望するカード'))}
+async function init(){
+ const params=new URLSearchParams(location.search);
+ if(params.has('selection')){try{const payload=decode(params.get('selection'));hideAll();$('sharedResult').classList.remove('hidden');showSummary(payload)}catch{hideAll();$('errorPanel').classList.remove('hidden');$('errorText').textContent='交換内容URLを読み取れませんでした。'}return}
+ const token=params.get('token');if(!token){hideAll();$('errorPanel').classList.remove('hidden');return}
+ const {data:res,error}=await sb.rpc('get_public_exchange_album',{share_token:token});
+ if(error||!res?.ok){hideAll();$('errorPanel').classList.remove('hidden');$('errorText').textContent=res?.message||'共有情報を取得できませんでした。';return}
+ data={requests:res.requests||[],manual_offers:res.manual_offers||[],owned_offers:res.owned_offers||[]};
+ renderList('requests','requestsEmpty',data.requests,'request',canOffer,canOffer);
+}
+init();
+</script></body></html>
