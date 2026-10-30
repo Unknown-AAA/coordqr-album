@@ -56,14 +56,14 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <div><label>シリーズ（複数選択可）</label><div id="exSeriesChecks" class="checkgrid"></div><select id="exSeries" class="legacy-select"><option value="">未設定</option></select></div>
 <div><label>パーツの種類（複数選択可）</label><div id="exPartChecks" class="checkgrid"></div><select id="exPart" class="legacy-select"><option value="">未設定</option></select></div>
 <div class="full"><label>タイプ名／縦横柄（複数選択可）</label><div id="exTypeChecks" class="checkgrid"></div><select id="exType" class="legacy-select"><option value="">未設定</option></select><div id="exTypeQuantities" class="grid"></div><div id="exTypeCharacterWrap" class="hidden"><label for="exTypeCharacter">キャラクター柄のキャラクター名</label><input id="exTypeCharacter" maxlength="100" placeholder="例：ひまり、みつき"></div><p class="status">アイプリバースでは、選んだ柄ごとに枚数を入力できます。</p></div>
-<div class="full"><label for="exSong">遊べる曲（新しい曲名は入力）</label><input id="exSong" maxlength="160" placeholder="曲名を入力"><div id="exSongChecks" class="checkgrid"></div></div>
+<div class="full"><label for="exSong" id="exSongLabel">遊べる曲（新しい曲名は入力）</label><input id="exSong" maxlength="160" placeholder="曲名を入力"><div id="exSongChecks" class="checkgrid"></div></div>
 <div><label for="exQuantity">枚数</label><input id="exQuantity" type="number" min="1" max="9999" value="1" required></div>
-<div><label for="exRate">レート</label><input id="exRate" type="number" min="0" max="999999" step="0.1" value="0" required></div>
+<div><label for="exRate">レート</label><input id="exRate" type="number" min="0" max="999999" step="10" value="0" required></div>
 <div class="full"><label for="exNotes">メモ</label><textarea id="exNotes" maxlength="3000"></textarea></div>
 <div class="full"><label for="exImageUrl">カード画像のリンク（任意）</label><input id="exImageUrl" type="url" placeholder="https://..."><p class="status">画像そのもののURLを貼り付けてください。画像ファイルを選んで登録する方法も使えます。リンク先によっては外部サイトの制限で表示できない場合があります。QRコード画像は登録しないでください。</p><label for="exImage">または、画像ファイルを選択</label><input id="exImage" type="file" accept="image/*"><p class="status">リンクとファイルの両方を指定した場合は、リンクを優先します。</p></div>
 </div><div class="actions"><button id="saveExchange">保存する</button><button type="button" id="cancelExchange" class="alt hidden">編集をキャンセル</button></div>
 </form>
-<div class="panel"><h2>登録済みの交換カード</h2><div id="exchangeEntries" class="cards"></div><div id="exchangeEmpty" class="empty">熱望・求のカードはまだありません。</div><h3 style="margin-top:18px">アルバムから自動登録</h3><p class="status">所持状況とお気に入り設定から自動で「求」「譲」に反映されるコーデです。ここでは確認用に表示し、編集・削除はコーデアルバムから行います。</p><div id="autoExchangeEntries" class="cards"></div><div id="autoExchangeEmpty" class="empty">自動登録されたコーデはありません。</div></div>
+<div class="panel"><h2>登録済みの交換カード</h2><input id="exchangeSearch" type="search" placeholder="登録済みカードを検索（名前・キャラクター・シリーズなど）"><div class="actions"><span class="smalllabel">表示列数</span><button type="button" class="alt exchange-cols" data-cols="2">2列</button><button type="button" class="alt exchange-cols" data-cols="3">3列</button></div><div id="exchangeEntries" class="cards"></div><div id="exchangeEmpty" class="empty">熱望・求のカードはまだありません。</div><h3 style="margin-top:18px">アルバムから自動登録</h3><p class="status">所持状況とお気に入り設定から自動で「求」「譲」に反映されるコーデです。ここでは確認用に表示し、編集・削除はコーデアルバムから行います。</p><div id="autoExchangeEntries" class="cards"></div><div id="autoExchangeEmpty" class="empty">自動登録されたコーデはありません。</div></div>
 </section>
 <section id="backupPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 style="margin:0">テキストバックアップ</h2><button class="alt" data-home>メニューに戻る</button></div><p class="muted">JSONにはコーデ情報と画像の保存先が入りますが、画像ファイル自体は入りません。復元時はテキスト情報を追加し、画像は再登録します。</p><div class="actions"><button id="export" class="alt">JSONを書き出す</button><button id="importBtn" class="alt">JSONを読み込む</button><input id="importFile" type="file" accept=".json,application/json" class="hidden"></div></section>
 </section></main><footer>個人用コレクション管理。QRはゲーム機で読み取れる明るさ・大きさで表示してください。<span style="display:block;margin-top:4px;font-size:.68rem;opacity:.72">[X→@7seMa510]</span></footer>
@@ -175,10 +175,10 @@ const EX_PART={
 };
 const EX_TYPE={
  'アイプリバース':['マイキャラ横柄','マイキャラ縦柄','キャラクター横柄','キャラクター縦柄','キャラクター横柄（同コーデ着用）','キャラクター縦柄（同コーデ着用）','ひまり、みつき固定柄','リングチャンス柄'],
- 'アイカツアンコール':['キュート♡','クール♤','セクシー♢','ポップ♣︎']
+ 'アイカツアンコール':['キュート♡','クール♢','セクシー♤','ポップ♣︎']
 };
 const EX_CHAR={
- 'ひみつのアイプリ':['ひまり','みつき','つむぎ','チィ','サクラ','タマキ','アイリ','リンリン','じゅりあ','える','おとめ','すばる','リング'],
+ 'ひみつのアイプリ':['ひまり','みつき','つむぎ','チィ','サクラ','タマキ','アイリ','リンリン','じゅりあ','える','おとめ','すばる','リング','ビビ'],
  'おねがいアイプリ':['いのり','あおい','ぐみ','おりびあ','ナナ','エマ']
 };
 let exchangeEntries=[];
@@ -207,7 +207,8 @@ function refreshExchangeFields(row={}){
  const chars=EX_CHAR[g]||knownCharacterNames();
  singleCheckboxGroup('exCharacterChecks','exCharacter',chars);
  $('exCharacter').oninput=()=>{const root=$('exCharacterChecks');root?.querySelectorAll('input').forEach(cb=>cb.checked=cb.value===$('exCharacter').value)};
- const knownSongs=[...new Set(exchangeEntries.map(x=>x.song).filter(Boolean))];
+ const knownSongs=[...new Set(exchangeEntries.filter(x=>x.game===g).map(x=>x.song).filter(Boolean))];
+ $('exSongLabel').classList.toggle('hidden',g==='アイカツアンコール');$('exSong').classList.toggle('hidden',g==='アイカツアンコール');$('exSongChecks').classList.toggle('hidden',g==='アイカツアンコール');if(g==='アイカツアンコール')$('exSong').value='';
  singleCheckboxGroup('exSongChecks','exSong',knownSongs);
  $('exSong').oninput=()=>{const root=$('exSongChecks');root?.querySelectorAll('input').forEach(cb=>cb.checked=cb.value===$('exSong').value)};
  renderTypeQuantityInputs(normalizedType,row.type_character_name||((type.split('（')[1]||'').split('）')[0])||'');
@@ -226,10 +227,13 @@ async function loadExchangeEntries(){
  exchangeEntries=data||[];refreshExchangeFields();renderExchangeEntries();renderAutoExchangeEntries();return true;
 }
 function renderExchangeEntries(){
- const root=$('exchangeEntries');root.replaceChildren();$('exchangeEmpty').classList.toggle('hidden',exchangeEntries.length>0);
- for(const x of exchangeEntries){const c=document.createElement('article');c.className='card';if(x.image_url){const im=document.createElement('img');im.className='thumb';im.src=x.image_url;im.alt='交換用カード画像';c.append(im)}
+ const root=$('exchangeEntries');root.replaceChildren();const query=($('exchangeSearch')?.value||'').trim().toLocaleLowerCase('ja');const visible=exchangeEntries.filter(x=>!query||[x.name,x.game,x.character_name,x.rarity,x.series,x.part_type,x.type_name,x.song,x.notes].filter(Boolean).join(' ').toLocaleLowerCase('ja').includes(query));$('exchangeEmpty').classList.toggle('hidden',visible.length>0);
+ for(const x of visible){const c=document.createElement('article');c.className='card';if(x.image_url){const im=document.createElement('img');im.className='thumb';im.src=x.image_url;im.alt='交換用カード画像';c.append(im)}
  const b=document.createElement('div');b.className='cardbody';const tag=document.createElement('span');tag.className='tag';tag.textContent=x.side+' ・ '+x.game;const title=document.createElement('div');title.className='ctitle';title.textContent=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=[x.character_name,x.rarity,x.series,x.part_type,x.type_name,x.song,`枚数：${x.quantity}`,`レート：${x.rate}`].filter(Boolean).join(' ・ ');const notes=document.createElement('div');notes.className='notes';notes.textContent=x.notes||'';const actions=document.createElement('div');actions.className='cardactions';const ed=document.createElement('button');ed.className='alt';ed.textContent='編集';ed.onclick=()=>editExchange(x);const del=document.createElement('button');del.className='del';del.textContent='削除';del.onclick=()=>deleteExchange(x);actions.append(ed,del);b.append(tag,title,meta,notes,actions);c.append(b);root.append(c)}
 }
+
+$('exchangeSearch')?.addEventListener('input',renderExchangeEntries);
+document.querySelectorAll('.exchange-cols').forEach(b=>b.addEventListener('click',()=>{$('exchangeEntries').classList.toggle('cols-3',b.dataset.cols==='3')}));
 function renderAutoExchangeEntries(){const root=$('autoExchangeEntries');if(!root)return;root.replaceChildren();const auto=entries.filter(x=>{const quantity=Math.max(0,Number(x.quantity)||0);if(x.is_owned===false)return quantity===0&&!x.qr_path;return quantity>=1&&x.is_favorite!==true});$('autoExchangeEmpty').classList.toggle('hidden',auto.length>0);for(const x of auto){const c=document.createElement('article');c.className='card';if(x.outfit_url){const im=document.createElement('img');im.className='thumb';im.src=x.outfit_url;im.alt='コーデ画像';im.loading='lazy';c.append(im)}const b=document.createElement('div');b.className='cardbody';const isMissing=x.is_owned===false;const tag=document.createElement('span');tag.className='tag';tag.textContent=(isMissing?'求':'譲')+' ・ '+x.game;const title=document.createElement('div');title.className='ctitle';title.textContent=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=[x.character_name,x.rarity,x.wave,x.part_type,`枚数：${isMissing?1:quantity}`,`レート：${Number(x.exchange_rate)||0}`].filter(Boolean).join(' ・ ');b.append(tag,title,meta);c.append(b);root.append(c)}}
 function resetExchangeForm(){ $('exchangeForm').reset();$('exchangeId').value='';$('exSide').value='熱望';$('exQuantity').value='1';$('exRate').value='0';$('exImage').value='';$('exImageUrl').value='';$('exchangeFormTitle').textContent='交換用カードを追加';$('saveExchange').textContent='保存する';$('cancelExchange').classList.add('hidden');refreshExchangeFields()}
 function editExchange(x){$('exchangeId').value=x.id;$('exSide').value=x.side;$('exGame').value=x.game;refreshExchangeFields(x);$('exName').value=x.name;$('exCharacter').value=x.character_name||'';refreshExchangeFields(x);$('exCharacter').value=x.character_name||'';$('exRarity').value=x.rarity||'';$('exSeries').value=x.series||'';$('exPart').value=x.part_type||'';$('exType').value=x.type_name||'';$('exSong').value=x.song||'';$('exQuantity').value=x.quantity||1;$('exRate').value=x.rate||0;$('exNotes').value=x.notes||'';$('exImageUrl').value=x.image_url||'';$('exchangeFormTitle').textContent='交換用カードを編集';$('saveExchange').textContent='変更を保存';$('cancelExchange').classList.remove('hidden');$('exchangeForm').scrollIntoView({behavior:'smooth',block:'start'})}
