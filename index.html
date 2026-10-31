@@ -52,7 +52,7 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <div><label>ジャンル</label><div id="exGameChecks" class="checkgrid"></div><select id="exGame" class="legacy-select"><option>ワッチャプリマジ！</option><option>アイプリバース</option><option>ひみつのアイプリ</option><option>おねがいアイプリ</option><option>アイカツアンコール</option></select></div>
 <div class="full"><label for="exName">カード／コーデ名（必須）</label><input id="exName" required maxlength="160"></div>
 <div id="exCharacterField"><label>キャラクター名</label><div id="exCharacterChecks" class="checkgrid"></div><input id="exCharacter" maxlength="100" placeholder="一覧にない名前は入力"></div>
-<div><label>レアリティ（複数選択可）</label><div id="exRarityChecks" class="checkgrid"></div><select id="exRarity" class="legacy-select"><option value="">未設定</option></select></div>
+<div><label>レアリティ（1つ選択）</label><div id="exRarityChecks" class="checkgrid"></div><select id="exRarity" class="legacy-select"><option value="">未設定</option></select></div>
 <div><label>シリーズ（複数選択可）</label><div id="exSeriesChecks" class="checkgrid"></div><select id="exSeries" class="legacy-select"><option value="">未設定</option></select></div>
 <div><label>パーツの種類（複数選択可）</label><div id="exPartChecks" class="checkgrid"></div><select id="exPart" class="legacy-select"><option value="">未設定</option></select></div>
 <div class="full"><label>タイプ名／縦横柄（複数選択可）</label><div id="exTypeChecks" class="checkgrid"></div><select id="exType" class="legacy-select"><option value="">未設定</option></select><div id="exTypeQuantities" class="grid"></div><div id="exTypeCharacterWrap" class="hidden"><label for="exTypeCharacter">キャラクター柄のキャラクター名</label><input id="exTypeCharacter" maxlength="100" placeholder="例：ひまり、みつき"></div><p class="status">アイプリバースでは、選んだ柄ごとに枚数を入力できます。</p></div>
@@ -195,10 +195,10 @@ function multiCheckboxGroup(containerId,selectId,values,selectedValue=''){
  for(const labelText of items){const value=labelText;const lab=document.createElement('label');lab.className='checkchip';const cb=document.createElement('input');cb.type='checkbox';cb.value=value;cb.checked=selected.has(value);cb.addEventListener('change',()=>{if(!value&&cb.checked){root.querySelectorAll('input').forEach(other=>{if(other!==cb)other.checked=false})}else if(value&&cb.checked){const empty=[...root.querySelectorAll('input')].find(other=>!other.value);if(empty)empty.checked=false}const vals=[...root.querySelectorAll('input:checked')].map(el=>el.value).filter(Boolean);const combined=vals.join('、');if(combined&&!Array.from($(selectId).options).some(o=>o.value===combined)){const opt=document.createElement('option');opt.value=combined;opt.textContent=combined;$(selectId).append(opt)}$(selectId).value=combined;});cb.value=value;lab.append(cb,document.createTextNode(labelText));/* Native label/checkbox interaction only: custom click toggling can cancel the first checkbox in Safari. */root.append(lab)}
 }
 function refreshExchangeFields(row={}){
- const g=$('exGame').value;const rarity=row.rarity||'',rawSeries=row.series||'',series=g==='おねがいアイプリ'?rawSeries.replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0)):rawSeries,part=row.part_type||'',type=row.type_name||row.pattern_type||'';
+ const g=$('exGame').value;let rarity=row.rarity||'';if(rarity.includes('サイン'))rarity='サイン';const rawSeries=row.series||'',series=g==='おねがいアイプリ'?rawSeries.replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0)):rawSeries,part=row.part_type||'',type=row.type_name||row.pattern_type||'';
  const normalizedType=g==='アイプリバース'?((EX_TYPE[g]||[]).filter(t=>type.includes(t)).join('、')):type;
  optionsInto('exRarity',EX_RARITY[g],rarity);optionsInto('exSeries',EX_SERIES[g],series);optionsInto('exPart',EX_PART[g],part);optionsInto('exType',EX_TYPE[g],type);
- multiCheckboxGroup('exRarityChecks','exRarity',EX_RARITY[g],rarity);multiCheckboxGroup('exSeriesChecks','exSeries',EX_SERIES[g],series);multiCheckboxGroup('exPartChecks','exPart',EX_PART[g],part);multiCheckboxGroup('exTypeChecks','exType',EX_TYPE[g],normalizedType);
+ singleCheckboxGroup('exRarityChecks','exRarity',EX_RARITY[g]);multiCheckboxGroup('exSeriesChecks','exSeries',EX_SERIES[g],series);multiCheckboxGroup('exPartChecks','exPart',EX_PART[g],part);multiCheckboxGroup('exTypeChecks','exType',EX_TYPE[g],normalizedType);
  singleCheckboxGroup('exSideChecks','exSide',['熱望','求','譲']);
  singleCheckboxGroup('exGameChecks','exGame',['ワッチャプリマジ！','アイプリバース','ひみつのアイプリ','おねがいアイプリ','アイカツアンコール'],()=>{refreshExchangeFields();});
  const characterField=$('exCharacterField');
@@ -224,7 +224,7 @@ function renderTypeQuantityInputs(selectedValue='',characterName=''){const root=
 async function loadExchangeEntries(){
  if(!user)return;const {data,error}=await sb.from('coord_exchange_entries').select('*').order('created_at',{ascending:false});
  if(error){msg('exchangeMsg','交換用データの再読み込みに失敗しました：'+error.message,'error');return false}
- exchangeEntries=data||[];refreshExchangeFields();renderExchangeEntries();renderAutoExchangeEntries();return true;
+ exchangeEntries=(data||[]).map(x=>({...x,rarity:(x.rarity||'').includes('サイン')?'サイン':(x.rarity||'')}));refreshExchangeFields();renderExchangeEntries();renderAutoExchangeEntries();return true;
 }
 function renderExchangeEntries(){
  const root=$('exchangeEntries');root.replaceChildren();const query=($('exchangeSearch')?.value||'').trim().toLocaleLowerCase('ja');const visible=exchangeEntries.filter(x=>!query||[x.name,x.game,x.character_name,x.rarity,x.series,x.part_type,x.type_name,x.song,x.notes].filter(Boolean).join(' ').toLocaleLowerCase('ja').includes(query));$('exchangeEmpty').classList.toggle('hidden',visible.length>0);
