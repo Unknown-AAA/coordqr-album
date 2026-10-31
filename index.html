@@ -207,8 +207,9 @@ function refreshExchangeFields(row={}){
  const chars=EX_CHAR[g]||knownCharacterNames();
  singleCheckboxGroup('exCharacterChecks','exCharacter',chars);
  $('exCharacter').oninput=()=>{const root=$('exCharacterChecks');root?.querySelectorAll('input').forEach(cb=>cb.checked=cb.value===$('exCharacter').value)};
+ const songUnsupported=['ワッチャプリマジ！','アイプリバース','アイカツアンコール'].includes(g);
  const knownSongs=[...new Set(exchangeEntries.filter(x=>x.game===g).map(x=>x.song).filter(Boolean))];
- $('exSongLabel').classList.toggle('hidden',g==='アイカツアンコール');$('exSong').classList.toggle('hidden',g==='アイカツアンコール');$('exSongChecks').classList.toggle('hidden',g==='アイカツアンコール');if(g==='アイカツアンコール')$('exSong').value='';
+ $('exSongLabel').classList.toggle('hidden',songUnsupported);$('exSong').classList.toggle('hidden',songUnsupported);$('exSongChecks').classList.toggle('hidden',songUnsupported);$('exSong').disabled=songUnsupported;if(songUnsupported)$('exSong').value='';
  singleCheckboxGroup('exSongChecks','exSong',knownSongs);
  $('exSong').oninput=()=>{const root=$('exSongChecks');root?.querySelectorAll('input').forEach(cb=>cb.checked=cb.value===$('exSong').value)};
  renderTypeQuantityInputs(normalizedType,row.type_character_name||((type.split('（')[1]||'').split('）')[0])||'');
