@@ -158,8 +158,16 @@ async function stopQrCamera(){
  $('qrCameraPanel').classList.add('hidden');$('stopQrCamera').classList.add('hidden');$('startQrCamera').classList.remove('hidden');
 }
 $('stopQrCamera').onclick=stopQrCamera;
-async function captureDetectedQr(video){
- const side=Math.min(video.videoWidth,video.videoHeight),sx=(video.videoWidth-side)/2,sy=(video.videoHeight-side)/2;
+async function captureDetectedQr(video,bounds){
+ // 検出したQRコードの範囲を基準に、周囲へ約30%の余白を加えて正方形に切り抜く。
+ const vw=video.videoWidth,vh=video.videoHeight;
+ let left=bounds?.left??vw*.2,top=bounds?.top??vh*.2;
+ let width=bounds?.width??vw*.6,height=bounds?.height??vh*.6;
+ const centerX=left+width/2,centerY=top+height/2;
+ let side=Math.max(width,height)*1.3;
+ side=Math.min(side,vw,vh);
+ let sx=Math.max(0,Math.min(vw-side,centerX-side/2));
+ let sy=Math.max(0,Math.min(vh-side,centerY-side/2));
  const canvas=document.createElement('canvas');canvas.width=900;canvas.height=900;
  const ctx=canvas.getContext('2d');
  ctx.drawImage(video,sx,sy,side,side,0,0,900,900);
@@ -167,7 +175,7 @@ async function captureDetectedQr(video){
  if(!blob)throw new Error('撮影画像を作成できませんでした。');
  const file=new File([blob],`qr-${Date.now()}.jpg`,{type:'image/jpeg'});
  const transfer=new DataTransfer();transfer.items.add(file);$('qr').files=transfer.files;
- $('qrCameraStatus').textContent='QRコードを認識して撮影しました。正方形の画像を登録できます。';
+ $('qrCameraStatus').textContent='QRコードを認識し、周囲に余白を残して拡大撮影しました。';
  await stopQrCamera();
 }
 $('startQrCamera').onclick=async()=>{
@@ -190,20 +198,28 @@ $('startQrCamera').onclick=async()=>{
    if(qrScanBusy||!video.videoWidth||video.readyState<2)return;
    qrScanBusy=true;
    try{
-    let detected=false;
+    let bounds=null;
     if(qrDetector){
-     try{const codes=await qrDetector.detect(video);detected=!!codes.length}catch(e){qrDetector=null}
+     try{
+      const codes=await qrDetector.detect(video);
+      if(codes.length){const b=codes[0].boundingBox;bounds={left:b.x,top:b.y,width:b.width,height:b.height};}
+     }catch(e){qrDetector=null}
     }
-    if(!detected){
+    if(!bounds){
      const maxWidth=960,scale=Math.min(1,maxWidth/video.videoWidth);
      qrScanCanvas.width=Math.max(1,Math.round(video.videoWidth*scale));
      qrScanCanvas.height=Math.max(1,Math.round(video.videoHeight*scale));
      qrScanContext.drawImage(video,0,0,qrScanCanvas.width,qrScanCanvas.height);
      const frame=qrScanContext.getImageData(0,0,qrScanCanvas.width,qrScanCanvas.height);
      const code=jsQR(frame.data,frame.width,frame.height,{ inversionAttempts:'attemptBoth' });
-     detected=!!code;
+     if(code){
+      const pts=[code.location.topLeftCorner,code.location.topRightCorner,code.location.bottomLeftCorner,code.location.bottomRightCorner];
+      const xs=pts.map(p=>p.x/scale),ys=pts.map(p=>p.y/scale);
+      const left=Math.min(...xs),top=Math.min(...ys),right=Math.max(...xs),bottom=Math.max(...ys);
+      bounds={left,top,width:right-left,height:bottom-top};
+     }
     }
-    if(detected){await captureDetectedQr(video);return}
+    if(bounds){await captureDetectedQr(video,bounds);return}
    }catch(e){
     $('qrCameraStatus').textContent='読み取り中です。QRコードを画面中央に映し、少し近づけたり明るい場所で試してください。';
    }finally{qrScanBusy=false}
