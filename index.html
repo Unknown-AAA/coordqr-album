@@ -74,6 +74,7 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <div id="modal" class="hidden" role="dialog" aria-modal="true"><div class="box"><div id="modalTitle" style="font-weight:850;margin-bottom:12px"></div><div id="qrGallery"></div><div class="actions" style="justify-content:center"><button id="closeModal" class="alt">閉じる</button></div></div></div>
 <script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import jsQR from 'https://esm.sh/jsqr@1.4.0';
 
 /* 下の2つは、現在使っているアプリと同じSupabase設定を入力してください */
 const SUPABASE_URL='https://bwxavexarxvyiidokyms.supabase.co';
@@ -130,7 +131,19 @@ function syncAipriQuantity(){
 }
 function renderPatternDetails(saved=[]){
  const root=$('patternChoices'), rows=$('patternDetailRows'); if(!root||!rows)return;
- patternDetails=Array.isArray(saved)?saved:[];
+ // 旧名称を新名称へ置換し、同じ柄が複数行に分かれている場合は1行へ統合する。
+ const normalized=Array.isArray(saved)?saved.map(x=>({...x,pattern:x.pattern==='ひまり、みつき固定柄'?'固定柄':x.pattern})):[];
+ const merged=[];
+ for(const entry of normalized){
+  const existing=merged.find(x=>x.pattern===entry.pattern);
+  if(!existing){merged.push(entry);continue;}
+  if((entry.pattern||'').includes('キャラクター')){
+   existing.characters=[...(existing.characters||[]),...(entry.characters||[])];
+  }else{
+   existing.quantity=Math.max(0,Number.parseInt(existing.quantity??1,10)||0)+Math.max(0,Number.parseInt(entry.quantity??1,10)||0);
+  }
+ }
+ patternDetails=merged;
  root.replaceChildren(); rows.replaceChildren();
  AIPRI_PATTERNS.forEach(label=>{
   const item=patternDetails.find(x=>x.pattern===label);
@@ -145,14 +158,14 @@ function renderPatternDetails(saved=[]){
    (item.characters||[]).forEach((ch,i)=>{
     const line=document.createElement('div');line.className='actions';
     const name=document.createElement('input');name.placeholder='キャラクター名';name.maxLength=80;name.value=ch.name||'';
-    const qty=document.createElement('input');qty.type='number';qty.min='1';qty.max='9999';qty.value=String(ch.quantity||1);qty.style.maxWidth='100px';
-    name.oninput=()=>{ch.name=name.value;syncPatternLegacy()};qty.onchange=()=>{ch.quantity=Math.max(1,Number(qty.value)||1);syncPatternLegacy()};
+    const qty=document.createElement('input');qty.type='number';qty.min='0';qty.max='9999';qty.value=String(ch.quantity??1);qty.style.maxWidth='100px';
+    name.oninput=()=>{ch.name=name.value;syncPatternLegacy()};qty.oninput=()=>{ch.quantity=Math.max(0,Math.min(9999,Number.parseInt(qty.value||'0',10)||0));syncPatternLegacy()};
     const del=document.createElement('button');del.type='button';del.className='alt';del.textContent='削除';del.onclick=()=>{item.characters.splice(i,1);renderPatternDetails(patternDetails)};
     line.append(name,qty,del);box.append(line);
    });
    const add=document.createElement('button');add.type='button';add.className='alt';add.textContent='＋ キャラクターを追加';add.onclick=()=>{item.characters=item.characters||[];item.characters.push({name:'',quantity:1});renderPatternDetails(patternDetails)};box.append(add);
   }else{
-   const qty=document.createElement('input');qty.type='number';qty.min='1';qty.max='9999';qty.value=String(item.quantity||1);qty.onchange=()=>{item.quantity=Math.max(1,Number(qty.value)||1);syncPatternLegacy()};box.append(document.createTextNode('枚数 '),qty);
+   const qty=document.createElement('input');qty.type='number';qty.min='0';qty.max='9999';qty.value=String(item.quantity??1);qty.oninput=()=>{item.quantity=Math.max(0,Math.min(9999,Number.parseInt(qty.value||'0',10)||0));syncPatternLegacy()};box.append(document.createTextNode('枚数 '),qty);
   }
   rows.append(box);
  });
@@ -165,40 +178,89 @@ function syncPatternLegacy(){
 }
 
 
-let qrStream=null,qrScanTimer=null,qrDetector=null;
+let qrStream=null,qrScanTimer=null,qrDetector=null,qrScanBusy=false,qrScanCanvas=null,qrScanContext=null;
 async function stopQrCamera(){
  if(qrScanTimer){clearInterval(qrScanTimer);qrScanTimer=null}
  if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null}
- const video=$('qrVideo');if(video)video.srcObject=null;
+ const video=$('qrVideo');if(video){video.pause();video.srcObject=null}
+ qrScanBusy=false;
  $('qrCameraPanel').classList.add('hidden');$('stopQrCamera').classList.add('hidden');$('startQrCamera').classList.remove('hidden');
 }
 $('stopQrCamera').onclick=stopQrCamera;
+async function captureDetectedQr(video,bounds){
+ // 検出したQRコードの範囲を基準に、周囲へ約30%の余白を加えて正方形に切り抜く。
+ const vw=video.videoWidth,vh=video.videoHeight;
+ let left=bounds?.left??vw*.2,top=bounds?.top??vh*.2;
+ let width=bounds?.width??vw*.6,height=bounds?.height??vh*.6;
+ const centerX=left+width/2,centerY=top+height/2;
+ let side=Math.max(width,height)*1.3;
+ side=Math.min(side,vw,vh);
+ let sx=Math.max(0,Math.min(vw-side,centerX-side/2));
+ let sy=Math.max(0,Math.min(vh-side,centerY-side/2));
+ const canvas=document.createElement('canvas');canvas.width=900;canvas.height=900;
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(video,sx,sy,side,side,0,0,900,900);
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));
+ if(!blob)throw new Error('撮影画像を作成できませんでした。');
+ const file=new File([blob],`qr-${Date.now()}.jpg`,{type:'image/jpeg'});
+ const transfer=new DataTransfer();transfer.items.add(file);$('qr').files=transfer.files;
+ $('qrCameraStatus').textContent='QRコードを認識し、周囲に余白を残して拡大撮影しました。';
+ await stopQrCamera();
+}
 $('startQrCamera').onclick=async()=>{
- if(!navigator.mediaDevices?.getUserMedia){$('qrCameraStatus').textContent='このブラウザはカメラに対応していません。画像ファイルを選択してください。';$('qrCameraPanel').classList.remove('hidden');return}
- if(!('BarcodeDetector' in window)){ $('qrCameraStatus').textContent='このブラウザはQRコードの自動認識に対応していません。画像ファイルを選択してください。';$('qrCameraPanel').classList.remove('hidden');return}
+ if(!navigator.mediaDevices?.getUserMedia){
+  $('qrCameraStatus').textContent='このブラウザはカメラに対応していません。画像ファイルを選択してください。';
+  $('qrCameraPanel').classList.remove('hidden');return;
+ }
  try{
-  qrDetector=new BarcodeDetector({formats:['qr_code']});
+  // BarcodeDetector対応ブラウザではネイティブ検出を使い、非対応SafariではjsQRに切り替える。
+  qrDetector=null;
+  if('BarcodeDetector' in window){
+   try{qrDetector=new BarcodeDetector({formats:['qr_code']})}catch(e){qrDetector=null}
+  }
   qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
   const video=$('qrVideo');video.srcObject=qrStream;await video.play();
   $('qrCameraPanel').classList.remove('hidden');$('startQrCamera').classList.add('hidden');$('stopQrCamera').classList.remove('hidden');
-  $('qrCameraStatus').textContent='QRコードを認識しています…';
+  $('qrCameraStatus').textContent='QRコードを認識しています。画面中央に映してください…';
+  qrScanCanvas=document.createElement('canvas');qrScanContext=qrScanCanvas.getContext('2d',{willReadFrequently:true});
   qrScanTimer=setInterval(async()=>{
-   if(!video.videoWidth||video.readyState<2)return;
+   if(qrScanBusy||!video.videoWidth||video.readyState<2)return;
+   qrScanBusy=true;
    try{
-    const codes=await qrDetector.detect(video);if(!codes.length)return;
-    const side=Math.min(video.videoWidth,video.videoHeight),sx=(video.videoWidth-side)/2,sy=(video.videoHeight-side)/2;
-    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=900;
-    canvas.getContext('2d').drawImage(video,sx,sy,side,side,0,0,900,900);
-    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));if(!blob)return;
-    const file=new File([blob],`qr-${Date.now()}.jpg`,{type:'image/jpeg'});
-    const transfer=new DataTransfer();transfer.items.add(file);$('qr').files=transfer.files;
-    $('qrCameraStatus').textContent='QRコードを認識して撮影しました。正方形の画像を登録できます。';
-    await stopQrCamera();
-   }catch(e){$('qrCameraStatus').textContent='認識中です。QRコードを画面中央に映してください。'}
-  },350);
- }catch(e){$('qrCameraPanel').classList.remove('hidden');$('qrCameraStatus').textContent='カメラを起動できませんでした。HTTPS接続とカメラの利用許可を確認し、画像ファイルを選択してください。';await stopQrCamera()}
+    let bounds=null;
+    if(qrDetector){
+     try{
+      const codes=await qrDetector.detect(video);
+      if(codes.length){const b=codes[0].boundingBox;bounds={left:b.x,top:b.y,width:b.width,height:b.height};}
+     }catch(e){qrDetector=null}
+    }
+    // ネイティブ検出が利用可能でも、未検出ならjsQRでも必ず再判定する。
+    if(!bounds){
+     const maxWidth=1280,scale=Math.min(1,maxWidth/video.videoWidth);
+     qrScanCanvas.width=Math.max(1,Math.round(video.videoWidth*scale));
+     qrScanCanvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+     qrScanContext.drawImage(video,0,0,qrScanCanvas.width,qrScanCanvas.height);
+     const frame=qrScanContext.getImageData(0,0,qrScanCanvas.width,qrScanCanvas.height);
+     const code=jsQR(frame.data,frame.width,frame.height,{ inversionAttempts:'attemptBoth' });
+     if(code){
+      const pts=[code.location.topLeftCorner,code.location.topRightCorner,code.location.bottomLeftCorner,code.location.bottomRightCorner];
+      const xs=pts.map(p=>p.x/scale),ys=pts.map(p=>p.y/scale);
+      const left=Math.min(...xs),top=Math.min(...ys),right=Math.max(...xs),bottom=Math.max(...ys);
+      bounds={left,top,width:right-left,height:bottom-top};
+     }
+    }
+    if(bounds){await captureDetectedQr(video,bounds);return}
+   }catch(e){
+    $('qrCameraStatus').textContent='読み取り中です。QRコードを画面中央に映し、少し近づけたり明るい場所で試してください。';
+   }finally{qrScanBusy=false}
+  },250);
+ }catch(e){
+  $('qrCameraPanel').classList.remove('hidden');
+  $('qrCameraStatus').textContent='カメラを起動できませんでした。HTTPS接続とカメラの利用許可を確認し、画像ファイルを選択してください。';
+  await stopQrCamera();
+ }
 };
-$('entryForm').onsubmit=async ev=>{ev.preventDefault();await stopQrCamera();$('exchangeRate').value=String(Math.max(10,Math.round((Number($('exchangeRate').value)||10)/10)*10));if(busy||!user)return;busy=true;$('save').disabled=true;msg('appMsg','保存中…');let uploaded=[];try{let id=$('entryId').value,old=entries.find(x=>x.id===id),of=$('outfit').files[0],qf=$('qr').files[0],linkedOutfit=$('outfitUrl').value.trim();let op=old?.outfit_path||null,qp=old?.qr_path||null,opp=old?.outfit_public_path||null;if(linkedOutfit){let parsed;try{parsed=new URL(linkedOutfit)}catch{throw Error('コーデ画像リンクの形式を確認してください。')}if(!['https:','http:'].includes(parsed.protocol))throw Error('コーデ画像リンクは http:// または https:// で始まるURLを指定してください。');op=null;opp=linkedOutfit}else if(of){op=await upload(of);uploaded.push(op);const publicPath=`${user.id}/${crypto.randomUUID()}-${safeFile(of.name)}`;const {error:publicError}=await sb.storage.from(PUBLIC_OUTFIT_BUCKET).upload(publicPath,of,{contentType:of.type,upsert:false});if(publicError)throw publicError;opp=publicPath;uploaded.push('PUBLIC:'+publicPath)}if(qf){qp=await upload(qf);uploaded.push(qp)}let payload={user_id:user.id,game:$('game').value,name:$('name').value.trim(),notes:$('notes').value.trim(),outfit_path:op,outfit_public_path:opp,qr_path:qp,is_favorite:$('isFavorite').checked,exchange_rate:Number($('exchangeRate').value)||0,rarity:$('rarity').value.trim(),part_type:$('partType').value,wave:$('wave').value.trim(),card_number:$('cardNumber').value.trim(),type_name:$('typeName').value.trim(),pattern:$('pattern').value.trim(),pattern_details:patternDetails,set_name:$('setName').value.trim()||$('name').value.trim(),is_owned:$('isOwned').value==='true',missing_side:$('isOwned').value==='false'&&$('missingSide')?$('missingSide').value:'求',accessory_optional:$('accessoryOptional').checked,character_name:$('characterName').value.trim(),quantity:$('isOwned').value==='false'?0:Math.max(1,Math.min(9999,Number.parseInt($('quantity').value||'1',10)||1)),is_favorite:$('isFavorite').checked,exchange_rate:Math.max(0,Number($('exchangeRate').value)||0)};if(!payload.name)throw Error('カード／コーデ名を入力してください。');let r=id?await sb.from('coord_entries').update(payload).eq('id',id).select().single():await sb.from('coord_entries').insert(payload).select().single();if(r.error)throw r.error;if(old){let del=[(of||linkedOutfit)&&old.outfit_path,qf&&old.qr_path].filter(Boolean);if(del.length)await sb.storage.from(BUCKET).remove(del);if((of||linkedOutfit)&&old.outfit_public_path&&!/^https?:\/\//i.test(old.outfit_public_path))await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([old.outfit_public_path])}const returnView=id?editReturnView:'cardsPanel';resetForm();msg('appMsg','保存しました。','success');await load();showView(returnView);if(returnView==='closetView')renderClosetCards()}catch(e){if(uploaded.length){const privatePaths=uploaded.filter(p=>!p.startsWith('PUBLIC:'));const publicPaths=uploaded.filter(p=>p.startsWith('PUBLIC:')).map(p=>p.slice(7));if(privatePaths.length)await sb.storage.from(BUCKET).remove(privatePaths);if(publicPaths.length)await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove(publicPaths)}msg('appMsg','保存失敗：'+errorText(e),'error')}finally{busy=false;$('save').disabled=false}};
+$('entryForm').onsubmit=async ev=>{ev.preventDefault();await stopQrCamera();$('exchangeRate').value=String(Math.max(10,Math.round((Number($('exchangeRate').value)||10)/10)*10));if(busy||!user)return;busy=true;$('save').disabled=true;msg('appMsg','保存中…');let uploaded=[];try{let id=$('entryId').value,old=entries.find(x=>x.id===id),of=$('outfit').files[0],qf=$('qr').files[0],linkedOutfit=$('outfitUrl').value.trim();let op=old?.outfit_path||null,qp=old?.qr_path||null,opp=old?.outfit_public_path||null;if(linkedOutfit){let parsed;try{parsed=new URL(linkedOutfit)}catch{throw Error('コーデ画像リンクの形式を確認してください。')}if(!['https:','http:'].includes(parsed.protocol))throw Error('コーデ画像リンクは http:// または https:// で始まるURLを指定してください。');op=null;opp=linkedOutfit}else if(of){op=await upload(of);uploaded.push(op);const publicPath=`${user.id}/${crypto.randomUUID()}-${safeFile(of.name)}`;const {error:publicError}=await sb.storage.from(PUBLIC_OUTFIT_BUCKET).upload(publicPath,of,{contentType:of.type,upsert:false});if(publicError)throw publicError;opp=publicPath;uploaded.push('PUBLIC:'+publicPath)}if(qf){qp=await upload(qf);uploaded.push(qp)}let payload={user_id:user.id,game:$('game').value,name:$('name').value.trim(),notes:$('notes').value.trim(),outfit_path:op,outfit_public_path:opp,qr_path:qp,is_favorite:$('isFavorite').checked,exchange_rate:Number($('exchangeRate').value)||0,rarity:$('rarity').value.trim(),part_type:$('partType').value,wave:$('wave').value.trim(),card_number:$('cardNumber').value.trim(),type_name:$('typeName').value.trim(),pattern:$('pattern').value.trim(),pattern_details:patternDetails,set_name:$('setName').value.trim()||$('name').value.trim(),is_owned:$('isOwned').value==='true',missing_side:$('isOwned').value==='false'&&$('missingSide')?$('missingSide').value:'求',accessory_optional:$('accessoryOptional').checked,character_name:$('characterName').value.trim(),quantity:$('isOwned').value==='false'?0:($('game').value==='アイプリバース'?calculatePatternQuantity():Math.max(1,Math.min(9999,Number.parseInt($('quantity').value||'1',10)||1))),is_favorite:$('isFavorite').checked,exchange_rate:Math.max(0,Number($('exchangeRate').value)||0)};if(!payload.name)throw Error('カード／コーデ名を入力してください。');let r=id?await sb.from('coord_entries').update(payload).eq('id',id).select().single():await sb.from('coord_entries').insert(payload).select().single();if(r.error)throw r.error;if(old){let del=[(of||linkedOutfit)&&old.outfit_path,qf&&old.qr_path].filter(Boolean);if(del.length)await sb.storage.from(BUCKET).remove(del);if((of||linkedOutfit)&&old.outfit_public_path&&!/^https?:\/\//i.test(old.outfit_public_path))await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([old.outfit_public_path])}const returnView=id?editReturnView:'cardsPanel';resetForm();msg('appMsg','保存しました。','success');await load();showView(returnView);if(returnView==='closetView')renderClosetCards()}catch(e){if(uploaded.length){const privatePaths=uploaded.filter(p=>!p.startsWith('PUBLIC:'));const publicPaths=uploaded.filter(p=>p.startsWith('PUBLIC:')).map(p=>p.slice(7));if(privatePaths.length)await sb.storage.from(BUCKET).remove(privatePaths);if(publicPaths.length)await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove(publicPaths)}msg('appMsg','保存失敗：'+errorText(e),'error')}finally{busy=false;$('save').disabled=false}};
 function resetForm(){$('entryForm').reset();$('outfitUrl').value='';$('entryId').value='';$('typeName').value='';$('pattern').value='';renderPatternDetails([]);$('partType').value='未分類';$('isOwned').value='true';if($('missingSide'))$('missingSide').value='求';$('missingSideWrap')?.classList.add('hidden');$('accessoryOptional').checked=false;$('characterName').value='';$('characterNewName').value='';renderCharacterChoices([]);$('quantity').value='1';syncOwnedQuantity();$('isFavorite').checked=false;$('exchangeRate').value='10';fillWaves($('wave'),$('game').value);fillRarities();refreshChips();$('formTitle').textContent='＋ コーデを登録';$('save').textContent='保存する';$('cancel').classList.add('hidden')}
 $('cancel').onclick=()=>{resetForm();showView(editReturnView)};
 function thumb(url,label){if(url){let i=document.createElement('img');i.className='thumb';i.src=url;i.alt=label;i.loading='lazy';return i}let d=document.createElement('div');d.className='thumb emptyimg';d.textContent=label;return d}
