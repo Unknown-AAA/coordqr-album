@@ -71,8 +71,6 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 </section></main><footer>個人用コレクション管理。QRはゲーム機で読み取れる明るさ・大きさで表示してください。<span style="display:block;margin-top:4px;font-size:.68rem;opacity:.72">[X→@7seMa510]</span></footer>
 <div id="modal" class="hidden" role="dialog" aria-modal="true"><div class="box"><div id="modalTitle" style="font-weight:850;margin-bottom:12px"></div><div id="qrGallery"></div><div class="actions" style="justify-content:center"><button id="closeModal" class="alt">閉じる</button></div></div></div>
 <script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-import jsQR from 'https://esm.sh/jsqr@1.4.0';
 
 /* 下の2つは、現在使っているアプリと同じSupabase設定を入力してください */
 const SUPABASE_URL='https://bwxavexarxvyiidokyms.supabase.co';
@@ -97,10 +95,24 @@ const configured=SUPABASE_URL.startsWith('https://')&&!SUPABASE_URL.includes('PA
 function msg(id,text='',type=''){const e=$(id);e.textContent=text;e.classList.toggle('hidden',!text);e.classList.remove('error','success');if(type)e.classList.add(type)}
 function errorText(e){return e?.message||'エラーが発生しました。設定と入力内容を確認してください。'}
 function showAuth(){user=null;$('auth').classList.remove('hidden');$('app').classList.add('hidden')}
-if(configured){sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);sb.auth.onAuthStateChange((_e,s)=>setTimeout(()=>s?.user?showApp(s.user):showAuth(),0));const {data:{session}}=await sb.auth.getSession();if(session?.user)await showApp(session.user)}
-else msg('authMsg','初回設定が必要です。index.html内のSUPABASE_URLとSUPABASE_PUBLISHABLE_KEYをSupabaseの値に置き換えてください。','error');
-async function auth(kind){if(!sb){msg('authMsg','先にSupabaseの接続設定を行ってください。','error');return}let email=$('email').value.trim(),password=$('password').value;if(!email){msg('authMsg','メールアドレスを入力してください。','error');return}if(kind!=='reset'&&password.length<6){msg('authMsg','パスワードは6文字以上にしてください。','error');return}msg('authMsg','処理中…');try{let r;if(kind==='signup')r=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.href.split('#')[0]}});else if(kind==='login')r=await sb.auth.signInWithPassword({email,password});else r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split('#')[0]});if(r.error)throw r.error;msg('authMsg',kind==='signup'?(r.data.session?'登録しました。':'確認メールを送信しました。メール内のリンクを開いてからログインしてください。'):kind==='login'?'ログインしました。':'再設定メールを送信しました。受信箱を確認してください。','success')}catch(e){msg('authMsg',errorText(e),'error')}}
-$('login').onclick=()=>auth('login');$('signup').onclick=()=>auth('signup');$('reset').onclick=()=>auth('reset');
+let authReady=false;
+async function initAuth(){
+ if(!configured){msg('authMsg','Supabaseの接続設定を確認してください。','error');return}
+ try{
+  const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+  sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+  sb.auth.onAuthStateChange((_e,s)=>setTimeout(()=>s?.user?showApp(s.user):showAuth(),0));
+  authReady=true;
+  const {data,error}=await sb.auth.getSession();
+  if(error)throw error;
+  if(data?.session?.user)await showApp(data.session.user);
+ }catch(e){msg('authMsg','認証機能の初期化に失敗しました：'+errorText(e),'error')}
+}
+async function auth(kind){if(!sb||!authReady){msg('authMsg','認証機能を準備中です。数秒待ってから、もう一度お試しください。','error');return}let email=$('email').value.trim(),password=$('password').value;if(!email){msg('authMsg','メールアドレスを入力してください。','error');return}if(kind!=='reset'&&password.length<6){msg('authMsg','パスワードは6文字以上にしてください。','error');return}msg('authMsg','処理中…');try{let r;if(kind==='signup')r=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.href.split('#')[0]}});else if(kind==='login')r=await sb.auth.signInWithPassword({email,password});else r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split('#')[0]});if(r.error)throw r.error;msg('authMsg',kind==='signup'?(r.data.session?'登録しました。':'確認メールを送信しました。メール内のリンクを開いてからログインしてください。'):kind==='login'?'ログインしました。':'再設定メールを送信しました。受信箱を確認してください。','success')}catch(e){msg('authMsg',errorText(e),'error')}}
+$('login').addEventListener('click',()=>auth('login'));
+$('signup').addEventListener('click',()=>auth('signup'));
+$('reset').addEventListener('click',()=>auth('reset'));
+initAuth();
 $('logout').onclick=async()=>{const {error}=await sb.auth.signOut();if(error)msg('appMsg',error.message,'error');else showAuth()};
 async function signed(path){if(!path)return '';if(/^https?:\/\//i.test(path))return path;let {data,error}=await sb.storage.from(BUCKET).createSignedUrl(path,3600);return error?'':data.signedUrl}
 async function syncPublicOutfit(x){if(!x?.outfit_path||x.outfit_public_path)return x?.outfit_public_path||null;try{const {data:blob,error:downloadError}=await sb.storage.from(BUCKET).download(x.outfit_path);if(downloadError)throw new Error('元画像の取得に失敗：'+downloadError.message);if(!blob)throw new Error('元画像データが空です');const ext=(blob.type||'image/jpeg').split('/')[1]?.replace('jpeg','jpg')||'jpg';const path=`${x.user_id}/${x.id}.${ext}`;const {error:uploadError}=await sb.storage.from(PUBLIC_OUTFIT_BUCKET).upload(path,blob,{contentType:blob.type||'image/jpeg',upsert:true});if(uploadError)throw new Error('公開用バケットへのアップロードに失敗：'+uploadError.message);const {error:updateError}=await sb.from('coord_entries').update({outfit_public_path:path}).eq('id',x.id);if(updateError){await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([path]);throw new Error('画像パスの保存に失敗：'+updateError.message)}x.outfit_public_path=path;return path}catch(e){publicImageSyncErrors.push((x.name||x.id)+': '+(e?.message||'不明な同期エラー'));return null}}
@@ -268,6 +280,7 @@ $('startQrCamera').onclick=async()=>{
      qrScanCanvas.height=Math.max(1,Math.round(video.videoHeight*scale));
      qrScanContext.drawImage(video,0,0,qrScanCanvas.width,qrScanCanvas.height);
      const frame=qrScanContext.getImageData(0,0,qrScanCanvas.width,qrScanCanvas.height);
+     const {default:jsQR}=await import('https://esm.sh/jsqr@1.4.0');
      const code=jsQR(frame.data,frame.width,frame.height,{ inversionAttempts:'attemptBoth' });
      if(code){
       const pts=[code.location.topLeftCorner,code.location.topRightCorner,code.location.bottomLeftCorner,code.location.bottomRightCorner];
