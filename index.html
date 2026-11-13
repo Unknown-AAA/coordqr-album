@@ -8,6 +8,7 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif}button,input,textarea,select{font:inherit}button{border:0;border-radius:11px;padding:11px 14px;background:var(--accent);color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.45}.alt{background:var(--pale);color:var(--accent)}.del{background:#fff0f2;color:#b83254}.hidden{display:none!important}
 header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#eaf7ff);border-bottom:1px solid var(--line)}header,main{max-width:1100px;margin-left:auto;margin-right:auto}body>header{max-width:none}.eyebrow{font-size:.75rem;letter-spacing:.12em;color:var(--accent);font-weight:800}.brand{font-size:1.6rem;font-weight:900;margin:4px 0}.muted,.status{color:var(--muted);font-size:.9rem}main{padding:14px;max-width:1100px}.panel{background:white;border:1px solid var(--line);border-radius:17px;padding:16px;margin:14px 0;box-shadow:0 8px 24px #2769870c}h2{font-size:1.1rem;margin:0 0 12px}label{display:block;font-weight:700;font-size:.9rem;margin:10px 0 6px}input,textarea,select{width:100%;border:1px solid #dcd5e8;border-radius:10px;padding:11px;background:white;color:var(--ink)}textarea{min-height:80px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.full{grid-column:1/-1}.actions,.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.notice{padding:11px 13px;border-radius:11px;background:#eaf8ff;color:#28627a;white-space:pre-wrap;font-size:.9rem;margin-top:10px}.notice.error{background:#fff0f2;color:#9c2140}.notice.success{background:#eefaf2;color:#216b3b}.toolbar{display:grid;grid-template-columns:1fr 170px;gap:9px;margin:12px 0}.tab{background:#eee9f6;color:#5b526f}.tab.active{background:var(--accent);color:white}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cards.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cards.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden}.thumbs{display:flex;gap:5px;padding:8px;background:#f5f1fa}.thumbs .thumb{width:100%;min-width:0}.set-cover{display:block;width:100%;height:160px;object-fit:contain;background:#fff;cursor:pointer;border-radius:10px;margin-bottom:10px}.filterbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:10px 0}.thumb{width:100%;height:155px;object-fit:contain;background:white;border-radius:8px}.emptyimg{display:flex;align-items:center;justify-content:center;color:#aaa;font-size:.8rem}.cardbody{padding:12px}.tag{display:inline-block;background:var(--pale);color:#287fa2;border-radius:99px;padding:4px 8px;font-size:.75rem;font-weight:800}.ctitle{font-weight:850;margin:8px 0;overflow-wrap:anywhere}.notes{font-size:.88rem;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}.cardactions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.cardactions button{flex:1;min-width:58px;padding:8px;font-size:.85rem}.empty{text-align:center;padding:24px;color:var(--muted)}.meta{font-size:.82rem;color:var(--muted);margin-top:7px;line-height:1.55}.setparts{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.partpill{border-radius:99px;padding:4px 7px;font-size:.75rem;background:#eaf8ff;color:#47778b}.partpill.ok{background:#eaf8ee;color:#216b3b}.partpill.miss{background:#fff0f2;color:#9c2140}footer{text-align:center;color:var(--muted);font-size:.78rem;padding:10px 15px 25px}
 #modal{position:fixed;inset:0;background:#191425e8;z-index:10;display:flex;align-items:center;justify-content:center;padding:14px}#modal .box{background:white;border-radius:17px;padding:16px;max-width:560px;width:100%;max-height:94dvh;overflow:auto;text-align:center}#qrBig{max-width:100%;max-height:68dvh;object-fit:contain}
+#qrCameraPanel{padding:10px;margin:8px 0}#qrVideo{object-fit:contain}
 @media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.toolbar{grid-template-columns:1fr}.thumb{height:130px}.panel{padding:13px}.brand{font-size:1.4rem}.cards.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cards.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.cardbody{padding:9px}.cardactions button{font-size:.76rem;padding:7px 5px}}
 .legacy-select{display:none!important}.navgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.navbtn{min-height:76px;background:linear-gradient(135deg,#dff6ff,#f5fcff);color:#286d89;border:1px solid #c8eaf6;border-radius:15px;font-size:1rem}.subnav{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.subnav button{flex:1;min-width:145px}.checkgrid{display:flex;flex-wrap:wrap;gap:7px;margin:7px 0 12px}.checkchip{position:relative;z-index:1;cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px;margin:0;border:1px solid #cce8f3;border-radius:999px;padding:8px 11px;background:#f8fdff;font-size:.88rem;font-weight:650}.checkchip:has(input:checked){background:#dff5ff;border-color:#69b9d8;color:#205d78}.checkchip input{position:relative;z-index:2;pointer-events:auto;cursor:pointer;width:auto;margin:0;accent-color:#48a8d0}
 #exSeriesChecks .checkchip:first-child{position:relative;z-index:20;isolation:isolate}
@@ -35,7 +36,7 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <div><label>レアリティ</label><div id="rarityChecks" class="checkgrid"></div><select id="rarity" class="legacy-select"><option value="">未設定</option></select></div>
 <div class="full"><label>弾／シリーズ</label><div id="waveChecks" class="checkgrid"></div><select id="wave" class="legacy-select"><option value="">未設定</option></select></div><div><label for="cardNumber">カード番号</label><input id="cardNumber" maxlength="100" placeholder="例：03-012"></div>
 <div><label>所持状況</label><div id="ownedChecks" class="checkgrid"></div><select id="isOwned" class="legacy-select"><option value="true">所持している</option><option value="false">持っていない</option></select></div><div id="missingSideWrap" class="hidden"><label>未所持カードの交換区分</label><div id="missingSideChecks" class="checkgrid"></div><select id="missingSide" class="legacy-select"><option value="求">求</option><option value="熱望">熱望</option></select><p class="muted">「持っていない」カードを交換用ページの「求」または「熱望」に自動表示します。</p></div>
-<div class="full"><label>マイキャラ（複数選択可）</label><div id="characterChoices" class="checkgrid"></div><div class="actions"><input id="characterNewName" maxlength="80" placeholder="新しいマイキャラ名を入力"><button type="button" id="addCharacter" class="alt">名前を追加</button></div><input id="characterName" type="hidden"></div><div><label for="quantity">所持数</label><input id="quantity" type="number" min="0" max="9999" step="1" value="1"></div><div class="full"><label style="display:flex;align-items:center;gap:8px;font-weight:600"><input id="isFavorite" type="checkbox" style="width:auto">お気に入り（交換の「譲」候補から除外）</label><label for="exchangeRate">交換用レート</label><input id="exchangeRate" type="number" min="10" max="999999" step="10" value="10"><p class="status">お気に入りでない所持済みコーデは、交換用ページの「譲」候補になります。レートは交換画面で使います。</p></div><div class="full"><label for="outfitUrl">コーデ画像のリンク（任意）</label><input id="outfitUrl" type="url" placeholder="https://..."><p class="status">画像そのもののURLを貼り付けてね。リンク先によっては外部サイトの制限で表示できない場合があります。</p><label for="outfit">または、画像ファイルを選択</label><input id="outfit" type="file" accept="image/*"><p class="status">リンクとファイルの両方を指定した場合はリンクを優先します。QRコード画像はここに登録しないでね。</p></div><div><label for="qr">QRコード画像</label><input id="qr" type="file" accept="image/*"></div>
+<div class="full"><label>マイキャラ（複数選択可）</label><div id="characterChoices" class="checkgrid"></div><div class="actions"><input id="characterNewName" maxlength="80" placeholder="新しいマイキャラ名を入力"><button type="button" id="addCharacter" class="alt">名前を追加</button></div><input id="characterName" type="hidden"></div><div><label for="quantity">所持数</label><input id="quantity" type="number" min="0" max="9999" step="1" value="1"></div><div class="full"><label style="display:flex;align-items:center;gap:8px;font-weight:600"><input id="isFavorite" type="checkbox" style="width:auto">お気に入り（交換の「譲」候補から除外）</label><label for="exchangeRate">交換用レート</label><input id="exchangeRate" type="number" min="10" max="999999" step="10" value="10"><p class="status">お気に入りでない所持済みコーデは、交換用ページの「譲」候補になります。レートは交換画面で使います。</p></div><div class="full"><label for="outfitUrl">コーデ画像のリンク（任意）</label><input id="outfitUrl" type="url" placeholder="https://..."><p class="status">画像そのもののURLを貼り付けてね。リンク先によっては外部サイトの制限で表示できない場合があります。</p><label for="outfit">または、画像ファイルを選択</label><input id="outfit" type="file" accept="image/*"><p class="status">リンクとファイルの両方を指定した場合はリンクを優先します。QRコード画像はここに登録しないでね。</p></div><div class="full"><label for="qr">QRコード画像</label><div class="actions"><button type="button" id="startQrCamera" class="alt">QRコードをカメラで撮影</button><button type="button" id="stopQrCamera" class="alt hidden">カメラを閉じる</button></div><div id="qrCameraPanel" class="panel hidden"><video id="qrVideo" playsinline muted style="width:100%;max-height:55vh;background:#111;border-radius:12px"></video><p id="qrCameraStatus" class="status">QRコードをカメラに映してください。</p></div><input id="qr" type="file" accept="image/*"><p class="status">カメラ非対応の場合は、従来どおり画像ファイルを選択できます。</p></div>
 <div class="full"><label for="notes">メモ（任意）</label><textarea id="notes" maxlength="3000" placeholder="色、入手メモなど"></textarea></div></div>
 <p class="status">画像は各8MB以下推奨。編集時、画像ファイルを選ばなければ元画像を維持します。</p><div class="actions"><button id="save">保存する</button><button type="button" id="cancel" class="alt hidden">編集をキャンセル</button></div></form></section>
 <section id="setsPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 style="margin:0">全てのコーデを見る</h2><button class="alt" data-backsets>戻る</button></div><p class="muted">同じゲーム・同じ「まとめるコーデ名」で自動判定します。通常コーデはトップス・ボトムス・シューズ・アクセサリーが所持済み、またはワンピース／フルコーデが所持済みで完成扱いです。フレンドカードは判定対象外です。</p><div class="actions"><span class="smalllabel">表示列数</span><button type="button" class="alt layout-btn" data-cols="2">2列</button><button type="button" class="alt layout-btn" data-cols="3">3列</button></div><div id="sets" class="cards"></div><div id="setsEmpty" class="empty">パーツの種類とまとめるコーデ名を登録すると、ここに表示されます。</div></section>
@@ -70,6 +71,7 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <div id="modal" class="hidden" role="dialog" aria-modal="true"><div class="box"><div id="modalTitle" style="font-weight:850;margin-bottom:12px"></div><div id="qrGallery"></div><div class="actions" style="justify-content:center"><button id="closeModal" class="alt">閉じる</button></div></div></div>
 <script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import jsQR from 'https://esm.sh/jsqr@1.4.0';
 
 /* 下の2つは、現在使っているアプリと同じSupabase設定を入力してください */
 const SUPABASE_URL='https://bwxavexarxvyiidokyms.supabase.co';
@@ -78,7 +80,7 @@ const BUCKET='coord-images';
 const PUBLIC_OUTFIT_BUCKET='coord-outfit-public';
 const $=id=>document.getElementById(id);
 let sb=null,user=null,entries=[],setClosets=[],filter='すべて',busy=false,editReturnView='cardsPanel';
-const WAVE_OPTIONS={'ワッチャプリマジ！':['１章','２章','３章','４章','５章','６章','スタジオ１・２章','スタジオ３・４章','スタジオ５・６章','スタジオ７・８章','スタジオ９章','スタジオ１０章','プロモ'],'アイプリバース':['ひみつ１弾','ひみつ２弾','ひみつ３弾','ひみつ４弾','ひみつ５弾','ひみつ６弾','リング１弾','リング２弾','リング３弾','リング４弾','リング５弾','リング６弾','おねがい１弾','おねがい２弾','おねがい３弾','おねがい４弾','おねがい５弾','おねがい６弾','プロモ']};
+const WAVE_OPTIONS={'ワッチャプリマジ！':['１章','２章','３章','４章','５章','６章','スタジオ１・２章','スタジオ３・４章','スタジオ５・６章','スタジオ７・８章','スタジオ９章','スタジオ１０章','プロモ'],'アイプリバース':['ひみつ１弾','ひみつ２弾','ひみつ３弾','ひみつ４弾','ひみつ５弾','ひみつ６弾','リング１弾','リング２弾','リング３弾','リング４弾','リング５弾','リング６弾','おねがい１弾','おねがい２弾','おねがい３弾','おねがい４弾','おねがい５弾','おねがい６弾','プロモ','ミルフィー']};
 const RARITY_OPTIONS={'ワッチャプリマジ！':['R','SR','UR','PMR','HR','OPQR'],'アイプリバース':['☆2','☆3','☆4','スペシャル']};
 const PART_OPTIONS=['未分類','トップス','ボトムス','シューズ','アクセサリー','ワンピース','フルコーデ','フレンドカード'];
 function fillWaves(select,game,selected=''){select.replaceChildren();const first=document.createElement('option');first.value='';first.textContent='未設定';select.append(first);for(const w of (WAVE_OPTIONS[game]||[])){const o=document.createElement('option');o.value=w;o.textContent=w;select.append(o)}if(selected&&!Array.from(select.options).some(o=>o.value===selected)){const o=document.createElement('option');o.value=selected;o.textContent=selected+'（登録済み）';select.append(o)}select.value=selected;}
@@ -123,16 +125,101 @@ function applyPreviousSetMetadata(){
  const setNames=splitSetNames($('setName').value);if(!setNames.length)return;
  const currentGame=$('game').value;
  const matches=entries.filter(x=>x.game===currentGame&&splitSetNames(x.set_name||x.name).some(n=>setNames.includes(n))).sort((a,b)=>String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||'')));
- const previous=matches.find(x=>x.rarity||x.wave);if(!previous)return;
- if(previous.rarity){fillRarities(previous.rarity);refreshChips();}
- if(previous.wave){fillWaves($('wave'),currentGame,previous.wave);refreshChips();}
+ const previousRarity=matches.find(x=>x.rarity)?.rarity||'';
+ const previousWave=matches.find(x=>x.wave)?.wave||'';
+ const previousCharacter=matches.find(x=>x.character_name)?.character_name||'';
+ if(previousRarity){fillRarities(previousRarity);refreshChips();}
+ if(previousWave){fillWaves($('wave'),currentGame,previousWave);refreshChips();}
+ if(previousCharacter){renderCharacterChoices(characterNamesFromText(previousCharacter));}
 }
 $('name').addEventListener('input',applyPartTypeFromName);
 $('setName').addEventListener('change',applyPreviousSetMetadata);
 $('setName').addEventListener('blur',applyPreviousSetMetadata);
 $('game').addEventListener('change',()=>{applyPreviousSetMetadata();});
 
-$('entryForm').onsubmit=async ev=>{ev.preventDefault();$('exchangeRate').value=String(Math.max(10,Math.round((Number($('exchangeRate').value)||10)/10)*10));if(busy||!user)return;busy=true;$('save').disabled=true;msg('appMsg','保存中…');let uploaded=[];try{let id=$('entryId').value,old=entries.find(x=>x.id===id),of=$('outfit').files[0],qf=$('qr').files[0],linkedOutfit=$('outfitUrl').value.trim();let op=old?.outfit_path||null,qp=old?.qr_path||null,opp=old?.outfit_public_path||null;if(linkedOutfit){let parsed;try{parsed=new URL(linkedOutfit)}catch{throw Error('コーデ画像リンクの形式を確認してください。')}if(!['https:','http:'].includes(parsed.protocol))throw Error('コーデ画像リンクは http:// または https:// で始まるURLを指定してください。');op=null;opp=linkedOutfit}else if(of){op=await upload(of);uploaded.push(op);const publicPath=`${user.id}/${crypto.randomUUID()}-${safeFile(of.name)}`;const {error:publicError}=await sb.storage.from(PUBLIC_OUTFIT_BUCKET).upload(publicPath,of,{contentType:of.type,upsert:false});if(publicError)throw publicError;opp=publicPath;uploaded.push('PUBLIC:'+publicPath)}if(qf){qp=await upload(qf);uploaded.push(qp)}let payload={user_id:user.id,game:$('game').value,name:$('name').value.trim(),notes:$('notes').value.trim(),outfit_path:op,outfit_public_path:opp,qr_path:qp,is_favorite:$('isFavorite').checked,exchange_rate:Number($('exchangeRate').value)||0,rarity:$('rarity').value.trim(),part_type:$('partType').value,wave:$('wave').value.trim(),card_number:$('cardNumber').value.trim(),set_name:$('setName').value.trim()||$('name').value.trim(),is_owned:$('isOwned').value==='true',missing_side:$('isOwned').value==='false'&&$('missingSide')?$('missingSide').value:'求',accessory_optional:$('accessoryOptional').checked,character_name:$('characterName').value.trim(),quantity:$('isOwned').value==='false'?0:Math.max(1,Math.min(9999,Number.parseInt($('quantity').value||'1',10)||1)),is_favorite:$('isFavorite').checked,exchange_rate:Math.max(0,Number($('exchangeRate').value)||0)};if(!payload.name)throw Error('カード／コーデ名を入力してください。');let r=id?await sb.from('coord_entries').update(payload).eq('id',id).select().single():await sb.from('coord_entries').insert(payload).select().single();if(r.error)throw r.error;if(old){let del=[(of||linkedOutfit)&&old.outfit_path,qf&&old.qr_path].filter(Boolean);if(del.length)await sb.storage.from(BUCKET).remove(del);if((of||linkedOutfit)&&old.outfit_public_path&&!/^https?:\/\//i.test(old.outfit_public_path))await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([old.outfit_public_path])}const returnView=id?editReturnView:'cardsPanel';resetForm();msg('appMsg','保存しました。','success');await load();showView(returnView);if(returnView==='closetView')renderClosetCards()}catch(e){if(uploaded.length){const privatePaths=uploaded.filter(p=>!p.startsWith('PUBLIC:'));const publicPaths=uploaded.filter(p=>p.startsWith('PUBLIC:')).map(p=>p.slice(7));if(privatePaths.length)await sb.storage.from(BUCKET).remove(privatePaths);if(publicPaths.length)await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove(publicPaths)}msg('appMsg','保存失敗：'+errorText(e),'error')}finally{busy=false;$('save').disabled=false}};
+let qrStream=null,qrScanTimer=null,qrDetector=null,qrScanBusy=false,qrScanCanvas=null,qrScanContext=null;
+async function stopQrCamera(){
+ if(qrScanTimer){clearInterval(qrScanTimer);qrScanTimer=null}
+ if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null}
+ const video=$('qrVideo');if(video){video.pause();video.srcObject=null}
+ qrScanBusy=false;
+ $('qrCameraPanel').classList.add('hidden');$('stopQrCamera').classList.add('hidden');$('startQrCamera').classList.remove('hidden');
+}
+$('stopQrCamera').onclick=stopQrCamera;
+async function captureDetectedQr(video,bounds){
+ // 検出したQRコードの範囲を基準に、周囲へ約30%の余白を加えて正方形に切り抜く。
+ const vw=video.videoWidth,vh=video.videoHeight;
+ let left=bounds?.left??vw*.2,top=bounds?.top??vh*.2;
+ let width=bounds?.width??vw*.6,height=bounds?.height??vh*.6;
+ const centerX=left+width/2,centerY=top+height/2;
+ let side=Math.max(width,height)*1.3;
+ side=Math.min(side,vw,vh);
+ let sx=Math.max(0,Math.min(vw-side,centerX-side/2));
+ let sy=Math.max(0,Math.min(vh-side,centerY-side/2));
+ const canvas=document.createElement('canvas');canvas.width=900;canvas.height=900;
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(video,sx,sy,side,side,0,0,900,900);
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));
+ if(!blob)throw new Error('撮影画像を作成できませんでした。');
+ const file=new File([blob],`qr-${Date.now()}.jpg`,{type:'image/jpeg'});
+ const transfer=new DataTransfer();transfer.items.add(file);$('qr').files=transfer.files;
+ $('qrCameraStatus').textContent='QRコードを認識し、周囲に余白を残して拡大撮影しました。';
+ await stopQrCamera();
+}
+$('startQrCamera').onclick=async()=>{
+ if(!navigator.mediaDevices?.getUserMedia){
+  $('qrCameraStatus').textContent='このブラウザはカメラに対応していません。画像ファイルを選択してください。';
+  $('qrCameraPanel').classList.remove('hidden');return;
+ }
+ try{
+  // BarcodeDetector対応ブラウザではネイティブ検出を使い、非対応SafariではjsQRに切り替える。
+  qrDetector=null;
+  if('BarcodeDetector' in window){
+   try{qrDetector=new BarcodeDetector({formats:['qr_code']})}catch(e){qrDetector=null}
+  }
+  qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  const video=$('qrVideo');video.srcObject=qrStream;await video.play();
+  $('qrCameraPanel').classList.remove('hidden');$('startQrCamera').classList.add('hidden');$('stopQrCamera').classList.remove('hidden');
+  $('qrCameraStatus').textContent='QRコードを認識しています。画面中央に映してください…';
+  qrScanCanvas=document.createElement('canvas');qrScanContext=qrScanCanvas.getContext('2d',{willReadFrequently:true});
+  qrScanTimer=setInterval(async()=>{
+   if(qrScanBusy||!video.videoWidth||video.readyState<2)return;
+   qrScanBusy=true;
+   try{
+    let bounds=null;
+    if(qrDetector){
+     try{
+      const codes=await qrDetector.detect(video);
+      if(codes.length){const b=codes[0].boundingBox;bounds={left:b.x,top:b.y,width:b.width,height:b.height};}
+     }catch(e){qrDetector=null}
+    }
+    // ネイティブ検出が利用可能でも、未検出ならjsQRでも必ず再判定する。
+    if(!bounds){
+     const maxWidth=1280,scale=Math.min(1,maxWidth/video.videoWidth);
+     qrScanCanvas.width=Math.max(1,Math.round(video.videoWidth*scale));
+     qrScanCanvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+     qrScanContext.drawImage(video,0,0,qrScanCanvas.width,qrScanCanvas.height);
+     const frame=qrScanContext.getImageData(0,0,qrScanCanvas.width,qrScanCanvas.height);
+     const code=jsQR(frame.data,frame.width,frame.height,{ inversionAttempts:'attemptBoth' });
+     if(code){
+      const pts=[code.location.topLeftCorner,code.location.topRightCorner,code.location.bottomLeftCorner,code.location.bottomRightCorner];
+      const xs=pts.map(p=>p.x/scale),ys=pts.map(p=>p.y/scale);
+      const left=Math.min(...xs),top=Math.min(...ys),right=Math.max(...xs),bottom=Math.max(...ys);
+      bounds={left,top,width:right-left,height:bottom-top};
+     }
+    }
+    if(bounds){await captureDetectedQr(video,bounds);return}
+   }catch(e){
+    $('qrCameraStatus').textContent='読み取り中です。QRコードを画面中央に映し、少し近づけたり明るい場所で試してください。';
+   }finally{qrScanBusy=false}
+  },250);
+ }catch(e){
+  $('qrCameraPanel').classList.remove('hidden');
+  $('qrCameraStatus').textContent='カメラを起動できませんでした。HTTPS接続とカメラの利用許可を確認し、画像ファイルを選択してください。';
+  await stopQrCamera();
+ }
+};
+$('entryForm').onsubmit=async ev=>{ev.preventDefault();await stopQrCamera();$('exchangeRate').value=String(Math.max(10,Math.round((Number($('exchangeRate').value)||10)/10)*10));if(busy||!user)return;busy=true;$('save').disabled=true;msg('appMsg','保存中…');let uploaded=[];try{let id=$('entryId').value,old=entries.find(x=>x.id===id),of=$('outfit').files[0],qf=$('qr').files[0],linkedOutfit=$('outfitUrl').value.trim();let op=old?.outfit_path||null,qp=old?.qr_path||null,opp=old?.outfit_public_path||null;if(linkedOutfit){let parsed;try{parsed=new URL(linkedOutfit)}catch{throw Error('コーデ画像リンクの形式を確認してください。')}if(!['https:','http:'].includes(parsed.protocol))throw Error('コーデ画像リンクは http:// または https:// で始まるURLを指定してください。');op=null;opp=linkedOutfit}else if(of){op=await upload(of);uploaded.push(op);const publicPath=`${user.id}/${crypto.randomUUID()}-${safeFile(of.name)}`;const {error:publicError}=await sb.storage.from(PUBLIC_OUTFIT_BUCKET).upload(publicPath,of,{contentType:of.type,upsert:false});if(publicError)throw publicError;opp=publicPath;uploaded.push('PUBLIC:'+publicPath)}if(qf){qp=await upload(qf);uploaded.push(qp)}let payload={user_id:user.id,game:$('game').value,name:$('name').value.trim(),notes:$('notes').value.trim(),outfit_path:op,outfit_public_path:opp,qr_path:qp,is_favorite:$('isFavorite').checked,exchange_rate:Number($('exchangeRate').value)||0,rarity:$('rarity').value.trim(),part_type:$('partType').value,wave:$('wave').value.trim(),card_number:$('cardNumber').value.trim(),set_name:$('setName').value.trim()||$('name').value.trim(),is_owned:$('isOwned').value==='true',missing_side:$('isOwned').value==='false'&&$('missingSide')?$('missingSide').value:'求',accessory_optional:$('accessoryOptional').checked,character_name:$('characterName').value.trim(),quantity:$('isOwned').value==='false'?0:Math.max(1,Math.min(9999,Number.parseInt($('quantity').value||'1',10)||1)),is_favorite:$('isFavorite').checked,exchange_rate:Math.max(0,Number($('exchangeRate').value)||0)};if(!payload.name)throw Error('カード／コーデ名を入力してください。');let r=id?await sb.from('coord_entries').update(payload).eq('id',id).select().single():await sb.from('coord_entries').insert(payload).select().single();if(r.error)throw r.error;if(old){let del=[(of||linkedOutfit)&&old.outfit_path,qf&&old.qr_path].filter(Boolean);if(del.length)await sb.storage.from(BUCKET).remove(del);if((of||linkedOutfit)&&old.outfit_public_path&&!/^https?:\/\//i.test(old.outfit_public_path))await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([old.outfit_public_path])}const returnView=id?editReturnView:'cardsPanel';resetForm();msg('appMsg','保存しました。','success');await load();showView(returnView);if(returnView==='closetView')renderClosetCards()}catch(e){if(uploaded.length){const privatePaths=uploaded.filter(p=>!p.startsWith('PUBLIC:'));const publicPaths=uploaded.filter(p=>p.startsWith('PUBLIC:')).map(p=>p.slice(7));if(privatePaths.length)await sb.storage.from(BUCKET).remove(privatePaths);if(publicPaths.length)await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove(publicPaths)}msg('appMsg','保存失敗：'+errorText(e),'error')}finally{busy=false;$('save').disabled=false}};
 function resetForm(){$('entryForm').reset();$('outfitUrl').value='';$('entryId').value='';$('partType').value='未分類';$('isOwned').value='true';if($('missingSide'))$('missingSide').value='求';$('missingSideWrap')?.classList.add('hidden');$('accessoryOptional').checked=false;$('characterName').value='';$('characterNewName').value='';renderCharacterChoices([]);$('quantity').value='1';syncOwnedQuantity();$('isFavorite').checked=false;$('exchangeRate').value='10';fillWaves($('wave'),$('game').value);fillRarities();refreshChips();$('formTitle').textContent='＋ コーデを登録';$('save').textContent='保存する';$('cancel').classList.add('hidden')}
 $('cancel').onclick=()=>{resetForm();showView(editReturnView)};
 function thumb(url,label){if(url){let i=document.createElement('img');i.className='thumb';i.src=url;i.alt=label;i.loading='lazy';return i}let d=document.createElement('div');d.className='thumb emptyimg';d.textContent=label;return d}
