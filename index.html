@@ -25,7 +25,7 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <section id="app" class="hidden">
 <div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h2 style="margin:0 0 4px">マイアルバム</h2><div id="who" class="status"></div></div><button id="logout" class="alt">ログアウト</button></div><div id="appMsg" class="notice hidden"></div><p class="muted">データと画像は非公開設定のクラウドに保存されます。通信が必要です。大切な情報は定期的にバックアップしてください。</p></div>
 <div id="albumSelect" class="panel"><h2>アルバムを選んでね</h2><p class="muted">普段のコレクション管理と、交換用のページを切り替えられます。</p><div class="navgrid"><button class="navbtn" id="goCoordAlbum">✧ コーデアルバム</button><button class="navbtn" id="goExchangeAlbum">♡ 交換用アルバム</button></div></div>
-<div id="homeNav" class="panel hidden"><h2>コーデアルバム</h2><div class="navgrid"><button class="navbtn" id="goEntry">✧ コーデを登録</button><button class="navbtn" id="goSets">♡ 完成コーデ一覧</button><button class="navbtn" id="goCards">▦ コーデ一覧</button><button class="navbtn" id="goBackup">☁ テキストバックアップ</button><button class="navbtn" id="goExchange">♡ 交換用アルバム</button></div></div>
+<div id="homeNav" class="panel hidden"><h2>コーデアルバム</h2><div class="navgrid"><button class="navbtn" id="goEntry">✧ コーデを登録</button><button class="navbtn" id="goSets">♡ 完成コーデ一覧</button><button class="navbtn" id="goCards">▦ コーデ一覧</button><button class="navbtn" id="goUnregistered">▧ QR未登録一覧</button><button class="navbtn" id="goBackup">☁ テキストバックアップ</button><button class="navbtn" id="goExchange">♡ 交換用アルバム</button></div></div>
 <div id="setMenu" class="panel hidden"><h2>完成コーデ一覧</h2><p class="muted">表示方法を選んでね。</p><div class="subnav"><button id="allSetsBtn">全てのコーデを見る</button><button id="closetBtn" class="alt">クローゼットを見る</button></div><div id="closetChoices" class="subnav hidden"></div><button class="alt" data-home>メニューに戻る</button></div>
 <div id="closetView" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 id="closetTitle" style="margin:0">クローゼット</h2><button class="alt" data-home>メニューに戻る</button></div><div id="closetCards" class="cards"></div><div id="closetEmpty" class="empty hidden">このキャラクターのコーデはまだありません。</div></div>
 <section id="entryPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 id="formTitle" style="margin:0">＋ コーデを登録</h2><button class="alt" data-home>メニューに戻る</button></div><form id="entryForm"><input id="entryId" type="hidden">
@@ -44,6 +44,7 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <section id="setsPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 style="margin:0">全てのコーデを見る</h2><button class="alt" data-backsets>戻る</button></div><p class="muted">同じゲーム・同じ「まとめるコーデ名」で自動判定します。通常コーデはトップス・ボトムス・シューズ・アクセサリーが所持済み、またはワンピース／フルコーデが所持済みで完成扱いです。フレンドカードは判定対象外です。</p><div class="actions"><span class="smalllabel">表示列数</span><button type="button" class="alt layout-btn" data-cols="2">2列</button><button type="button" class="alt layout-btn" data-cols="3">3列</button></div><div id="sets" class="cards"></div><div id="setsEmpty" class="empty">パーツの種類とまとめるコーデ名を登録すると、ここに表示されます。</div></section>
 <section id="cardsPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 style="margin:0">コーデ一覧</h2><button class="alt" data-home>メニューに戻る</button></div><div class="actions"><span class="smalllabel">表示列数</span><button type="button" class="alt layout-btn" data-cols="2">2列</button><button type="button" class="alt layout-btn" data-cols="3">3列</button></div><div class="tabs"><button class="tab active" data-filter="すべて">すべて</button><button class="tab" data-filter="アイプリバース">アイプリバース</button><button class="tab" data-filter="ワッチャプリマジ！">ワッチャプリマジ！</button></div>
 <div class="toolbar"><input id="search" type="search" placeholder="コーデ名・メモを検索"><select id="sort"><option value="new">新しい順</option><option value="old">古い順</option><option value="name">名前順</option></select></div><div class="filterbar"><select id="ownedFilter"><option value="all">所持状況：すべて</option><option value="owned">持っているもの</option><option value="missing">持っていないもの</option></select><select id="rarityFilter"><option value="all">レアリティ：すべて</option><option>★1</option><option>★2</option><option>★3</option><option>★4</option><option>★5</option><option>★6</option><option>R</option><option>SR</option><option>PR</option><option>MR</option><option>その他</option></select><select id="waveFilter"><option value="all">シリーズ：すべて</option></select></div><div id="cards" class="cards"></div><div id="empty" class="empty hidden">まだコーデがありません。上のフォームから登録してね。</div></section>
+<section id="unregisteredPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 style="margin:0">QR未登録一覧</h2><button class="alt" data-home>メニューに戻る</button></div><p class="muted">QRコード画像がまだ登録されていないコーデだけを表示します。下のカメラでまとめて撮影し、それぞれのコーデに割り当ててください。登録が完了すると、この一覧から自動的に消えて「コーデ一覧」に表示されます。</p><div id="unregisteredQrTools" class="panel"><strong>QRコードまとめ撮影</strong><div class="actions"><button type="button" id="unregisteredScanStart" class="alt">QRコードをカメラで撮影</button><button type="button" id="unregisteredScanStop" class="alt hidden">カメラを閉じる</button></div><div id="unregisteredScanCamera" class="panel hidden"><video id="unregisteredScanVideo" playsinline muted style="width:100%;max-height:55vh;background:#111;border-radius:12px"></video><p id="unregisteredScanStatus" class="status">QRコードをカメラに映してください。</p></div><div id="unregisteredQrBatchPanel" class="panel hidden"><strong>撮影したQRコード</strong><div id="unregisteredQrBatchList"></div><div class="actions"><button type="button" id="unregisteredApplyQrBatch" class="alt">選択したコーデにまとめて割り当て</button><button type="button" id="unregisteredClearQrBatch" class="alt">撮影分をクリア</button></div></div></div><div class="actions"><strong id="unregisteredCount"></strong></div><div id="unregisteredCards" class="cards"></div><div id="unregisteredEmpty" class="empty hidden">QR未登録のコーデはありません。すべて登録済みです！</div></section>
 <section id="exchangePanel" class="panel hidden">
 <div class="actions" style="justify-content:space-between;align-items:center"><h2 style="margin:0">交換用アルバム</h2><button class="alt" data-home>メニューに戻る</button></div>
 <p class="muted">交換用の「熱望・求」はここで登録します。所持済みのコーデはお気に入りでないものが「譲」候補として自動表示されます。QRコード画像は共有ページに公開されません。</p>
@@ -121,8 +122,8 @@ function publicOutfitUrl(path){if(!path)return null;if(/^https?:\/\//i.test(path
 async function mapWithLimit(items,limit,worker){let next=0;const runners=Array.from({length:Math.min(limit,items.length)},async()=>{while(true){const index=next++;if(index>=items.length)return;await worker(items[index],index)}});await Promise.all(runners)}
 let publicSyncRun=0;
 async function finishPublicImageSync(items,runId,closetError){await mapWithLimit(items,3,async x=>{await syncPublicOutfit(x)});if(runId!==publicSyncRun||!user)return;let status=closetError?'同期済み。完成コーデのマイキャラ割り当てを使うには、案内したSQLをSupabaseで実行してください。':'同期済み。';if(publicImageSyncErrors.length){status+=' 公開用画像への同期に失敗した画像が'+publicImageSyncErrors.length+'件あります。詳細：'+publicImageSyncErrors.slice(0,3).join(' ／ ')+(publicImageSyncErrors.length>3?' ほか':'');msg('appMsg',status,'error')}else msg('appMsg',status,closetError?'error':'')}
-async function load(){if(!user)return;const runId=++publicSyncRun;msg('appMsg','読み込み中…');publicImageSyncErrors=[];const [entryResult,closetResult]=await Promise.all([sb.from('coord_entries').select('*').order('created_at',{ascending:false}),sb.from('coord_set_closets').select('*')]);if(entryResult.error){msg('appMsg','読み込み失敗：'+entryResult.error.message,'error');return}entries=entryResult.data||[];setClosets=closetResult.error?[]:(closetResult.data||[]);await mapWithLimit(entries,8,async x=>{const [outfitUrl,qrUrl]=await Promise.all([signed(x.outfit_path),signed(x.qr_path)]);x.outfit_url=outfitUrl;x.qr_url=qrUrl});const pending=entries.filter(x=>x.outfit_path&&!x.outfit_public_path);msg('appMsg',pending.length?'同期済み。画像の補完をバックグラウンドで実行中…':'同期済み。',closetResult.error?'error':'');render();if(pending.length)void finishPublicImageSync(pending,runId,closetResult.error)}
-async function showApp(u){const wasVisible=!$('app').classList.contains('hidden');const previous=wasVisible?(['albumSelect','homeNav','setMenu','closetView','entryPanel','setsPanel','cardsPanel','backupPanel','exchangePanel'].find(id=>!$(id).classList.contains('hidden'))||'albumSelect'):(sessionStorage.getItem('coordCurrentView')||'albumSelect');user=u;$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent='ログイン中：'+u.email;await load();showView(previous);if(previous==='exchangePanel')await loadExchangeEntries()}
+async function load(){if(!user)return;const runId=++publicSyncRun;msg('appMsg','読み込み中…');publicImageSyncErrors=[];const [entryResult,closetResult]=await Promise.all([sb.from('coord_entries').select('*').order('created_at',{ascending:false}),sb.from('coord_set_closets').select('*')]);if(entryResult.error){msg('appMsg','読み込み失敗：'+entryResult.error.message,'error');return}entries=entryResult.data||[];setClosets=closetResult.error?[]:(closetResult.data||[]);await mapWithLimit(entries,8,async x=>{const [outfitUrl,qrUrl]=await Promise.all([signed(x.outfit_path),signed(x.qr_path)]);x.outfit_url=outfitUrl;x.qr_url=qrUrl});const pending=entries.filter(x=>x.outfit_path&&!x.outfit_public_path);msg('appMsg',pending.length?'同期済み。画像の補完をバックグラウンドで実行中…':'同期済み。',closetResult.error?'error':'');render();renderUnregistered();if(pending.length)void finishPublicImageSync(pending,runId,closetResult.error)}
+async function showApp(u){const wasVisible=!$('app').classList.contains('hidden');const previous=wasVisible?(['albumSelect','homeNav','setMenu','closetView','entryPanel','setsPanel','cardsPanel','unregisteredPanel','backupPanel','exchangePanel'].find(id=>!$(id).classList.contains('hidden'))||'albumSelect'):(sessionStorage.getItem('coordCurrentView')||'albumSelect');user=u;$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent='ログイン中：'+u.email;await load();showView(previous);if(previous==='exchangePanel')await loadExchangeEntries()}
 function safeFile(s){return (s||'image').normalize('NFKC').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-70)||'image'}
 async function upload(file){if(!file)return null;if(!file.type.startsWith('image/'))throw Error('画像ファイルを選択してください。');if(file.size>8*1024*1024)throw Error('画像は8MB以下にしてください。');let path=`${user.id}/${crypto.randomUUID()}-${safeFile(file.name)}`;let {error}=await sb.storage.from(BUCKET).upload(path,file,{contentType:file.type,upsert:false});if(error)throw error;return path}
 function inferPartTypeFromName(value){
@@ -224,16 +225,16 @@ function syncPatternLegacy(){
 let qrStream=null,qrScanTimer=null,qrDetector=null,qrScanBusy=false,qrScanCanvas=null,qrScanContext=null;
 let qrBatchFiles=[];let qrLastCaptureAt=0;
 function renderQrBatch(){
- const panel=$('qrBatchPanel'),root=$('qrBatchList');if(!panel||!root)return;root.replaceChildren();panel.classList.toggle('hidden',!qrBatchFiles.length);
+ const panel=$('unregisteredQrBatchPanel'),root=$('unregisteredQrBatchList');if(!panel||!root)return;root.replaceChildren();panel.classList.toggle('hidden',!qrBatchFiles.length);
  qrBatchFiles.forEach((file,i)=>{const row=document.createElement('div');row.className='actions';const label=document.createElement('span');label.textContent=`QR ${i+1}：${file.name}`;const target=document.createElement('select');target.dataset.qrIndex=String(i);const current=document.createElement('option');current.value='';current.textContent='割り当て先を選択';target.append(current);
  const formTarget=document.createElement('option');formTarget.value='__current_form__';formTarget.textContent='現在入力中のコーデ';target.append(formTarget);
  [...$('bundleRows')?.children||[]].forEach((row,j)=>{const o=document.createElement('option');o.value='__bundle__'+j;o.textContent='追加パーツ：'+row.dataset.part;target.append(o)});
- entries.forEach(entry=>{const o=document.createElement('option');o.value=entry.id;o.textContent=entry.name;target.append(o)});const remove=document.createElement('button');remove.type='button';remove.className='del';remove.textContent='削除';remove.onclick=()=>{qrBatchFiles.splice(i,1);renderQrBatch()};row.append(label,target,remove);root.append(row)});
+ entries.filter(entry=>!entry.qr_path).forEach(entry=>{const o=document.createElement('option');o.value=entry.id;o.textContent=entry.name;target.append(o)});const remove=document.createElement('button');remove.type='button';remove.className='del';remove.textContent='削除';remove.onclick=()=>{qrBatchFiles.splice(i,1);renderQrBatch()};row.append(label,target,remove);root.append(row)});
 }
-$('clearQrBatch')?.addEventListener('click',()=>{qrBatchFiles=[];renderQrBatch()});
-$('applyQrBatch')?.addEventListener('click',async()=>{
- const selects=[...$('qrBatchList').querySelectorAll('select')];if(selects.some(x=>!x.value)){msg('appMsg','すべてのQRコードの割り当て先を選択してください。','error');return}
- const btn=$('applyQrBatch');btn.disabled=true;try{for(let i=0;i<selects.length;i++){const target=selects[i].value;
+$('unregisteredClearQrBatch')?.addEventListener('click',()=>{qrBatchFiles=[];renderQrBatch()});
+$('unregisteredApplyQrBatch')?.addEventListener('click',async()=>{
+ const selects=[...$('unregisteredQrBatchList').querySelectorAll('select')];if(selects.some(x=>!x.value)){msg('appMsg','すべてのQRコードの割り当て先を選択してください。','error');return}
+ const btn=$('unregisteredApplyQrBatch');btn.disabled=true;try{for(let i=0;i<selects.length;i++){const target=selects[i].value;
  if(target==='__current_form__'||target.startsWith('__bundle__')){
   const input=target==='__current_form__' ? $('qr') : $('bundleRows').children[Number(target.replace('__bundle__',''))]?.querySelector('[data-qr]');
   if(!input)throw Error('割り当て先の入力欄が見つかりません。');
@@ -246,11 +247,11 @@ $('applyQrBatch')?.addEventListener('click',async()=>{
 async function stopQrCamera(){
  if(qrScanTimer){clearInterval(qrScanTimer);qrScanTimer=null}
  if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null}
- const video=$('qrVideo');if(video){video.pause();video.srcObject=null}
+ const video=$('unregisteredScanVideo');if(video){video.pause();video.srcObject=null}
  qrScanBusy=false;
- $('qrCameraPanel').classList.add('hidden');$('stopQrCamera').classList.add('hidden');$('startQrCamera').classList.remove('hidden');
+ $('unregisteredScanCamera').classList.add('hidden');$('unregisteredScanStop').classList.add('hidden');$('unregisteredScanStart').classList.remove('hidden');
 }
-$('stopQrCamera').onclick=stopQrCamera;
+$('unregisteredScanStop').onclick=stopQrCamera;
 async function captureDetectedQr(video,bounds){
  // 検出したQRコードの範囲を基準に、周囲へ約30%の余白を加えて正方形に切り抜く。
  const vw=video.videoWidth,vh=video.videoHeight;
@@ -268,12 +269,12 @@ async function captureDetectedQr(video,bounds){
  if(!blob)throw new Error('撮影画像を作成できませんでした。');
  const file=new File([blob],`qr-${Date.now()}.jpg`,{type:'image/jpeg'});
  qrBatchFiles.push(file);renderQrBatch();
- $('qrCameraStatus').textContent=`QRコードを${qrBatchFiles.length}件撮影しました。続けて撮影するか、カメラを閉じて割り当ててください。`;
+ $('unregisteredScanStatus').textContent=`QRコードを${qrBatchFiles.length}件撮影しました。続けて撮影するか、カメラを閉じて割り当ててください。`;
 }
-$('startQrCamera').onclick=async()=>{
+$('unregisteredScanStart').onclick=async()=>{
  if(!navigator.mediaDevices?.getUserMedia){
-  $('qrCameraStatus').textContent='このブラウザはカメラに対応していません。画像ファイルを選択してください。';
-  $('qrCameraPanel').classList.remove('hidden');return;
+  $('unregisteredScanStatus').textContent='このブラウザはカメラに対応していません。画像ファイルを選択してください。';
+  $('unregisteredScanCamera').classList.remove('hidden');return;
  }
  try{
   // BarcodeDetector対応ブラウザではネイティブ検出を使い、非対応SafariではjsQRに切り替える。
@@ -282,9 +283,9 @@ $('startQrCamera').onclick=async()=>{
    try{qrDetector=new BarcodeDetector({formats:['qr_code']})}catch(e){qrDetector=null}
   }
   qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-  const video=$('qrVideo');video.srcObject=qrStream;await video.play();
-  $('qrCameraPanel').classList.remove('hidden');$('startQrCamera').classList.add('hidden');$('stopQrCamera').classList.remove('hidden');
-  $('qrCameraStatus').textContent='QRコードを認識しています。画面中央に映してください…';
+  const video=$('unregisteredScanVideo');video.srcObject=qrStream;await video.play();
+  $('unregisteredScanCamera').classList.remove('hidden');$('unregisteredScanStart').classList.add('hidden');$('unregisteredScanStop').classList.remove('hidden');
+  $('unregisteredScanStatus').textContent='QRコードを認識しています。画面中央に映してください…';
   qrScanCanvas=document.createElement('canvas');qrScanContext=qrScanCanvas.getContext('2d',{willReadFrequently:true});
   qrScanTimer=setInterval(async()=>{
    if(qrScanBusy||!video.videoWidth||video.readyState<2)return;
@@ -315,12 +316,12 @@ $('startQrCamera').onclick=async()=>{
     }
     if(bounds&&Date.now()-qrLastCaptureAt>1400){qrLastCaptureAt=Date.now();await captureDetectedQr(video,bounds);return}
    }catch(e){
-    $('qrCameraStatus').textContent='読み取り中です。QRコードを画面中央に映し、少し近づけたり明るい場所で試してください。';
+    $('unregisteredScanStatus').textContent='読み取り中です。QRコードを画面中央に映し、少し近づけたり明るい場所で試してください。';
    }finally{qrScanBusy=false}
   },250);
  }catch(e){
-  $('qrCameraPanel').classList.remove('hidden');
-  $('qrCameraStatus').textContent='カメラを起動できませんでした。HTTPS接続とカメラの利用許可を確認し、画像ファイルを選択してください。';
+  $('unregisteredScanCamera').classList.remove('hidden');
+  $('unregisteredScanStatus').textContent='カメラを起動できませんでした。HTTPS接続とカメラの利用許可を確認し、画像ファイルを選択してください。';
   await stopQrCamera();
  }
 };
@@ -331,16 +332,17 @@ $('entryForm').onsubmit=async ev=>{ev.preventDefault();await stopQrCamera();$('e
 let bundleBase=null;
 function openBundlePanel(base){
  bundleBase=base;const isDress=base.part_type==='ワンピース';
- const suffix=isDress?['ワンピ','シューズ','アクセ']:['トップス','ボトムス','シューズ','アクセ'];
+ const suffix=isDress?['シューズ','アクセ']:['ボトムス','シューズ','アクセ'];
  const oldSuffix=isDress?/(ワンピース|ワンピ|ドレス)$/u:/(トップス)$/u;
  const baseName=base.name.replace(oldSuffix,'').trim();
  const root=$('bundleRows');root.replaceChildren();
  suffix.forEach((part,i)=>{const row=document.createElement('div');row.className='panel';row.dataset.part=part;
  const check=document.createElement('label');check.className='checkchip';const enabled=document.createElement('input');enabled.type='checkbox';enabled.checked=true;check.append(enabled,document.createTextNode(part+'を登録'));
  const name=document.createElement('input');name.value=baseName+part;name.dataset.name='1';
+ const quantity=document.createElement('input');quantity.type='number';quantity.min=base.is_owned===false?'0':'1';quantity.max='9999';quantity.step='1';quantity.value=String(base.is_owned===false?0:Math.max(1,Number.parseInt(base.quantity??1,10)||1));quantity.dataset.quantity='1';quantity.style.maxWidth='140px';
  const image=document.createElement('input');image.type='file';image.accept='image/*';image.dataset.outfit='1';
  const qr=document.createElement('input');qr.type='file';qr.accept='image/*';qr.dataset.qr='1';
- row.append(check,document.createTextNode('コーデ名'),name,document.createTextNode('コーデ画像'),image,document.createTextNode('QR画像'),qr);root.append(row)
+ row.append(check,document.createTextNode(part+'のコーデ名'),name,document.createTextNode('所持数'),quantity,document.createTextNode('コーデ画像'),image,document.createTextNode('QR画像'),qr);root.append(row)
  });
  $('bundlePanel').classList.remove('hidden');$('bundlePanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -355,7 +357,8 @@ $('saveBundle')?.addEventListener('click',async()=>{
    let outfit_path=null,outfit_public_path=null,qr_path=null;
    if(outfitFile){outfit_path=await upload(outfitFile);uploadedPaths.push(['private',outfit_path]);const publicPath=`${user.id}/${crypto.randomUUID()}-${safeFile(outfitFile.name)}`;const up=await sb.storage.from(PUBLIC_OUTFIT_BUCKET).upload(publicPath,outfitFile,{contentType:outfitFile.type,upsert:false});if(up.error)throw up.error;outfit_public_path=publicPath;uploadedPaths.push(['public',publicPath])}
    if(qrFile){qr_path=await upload(qrFile);uploadedPaths.push(['private',qr_path])}
-   const payload={...bundleBase,name,part_type:part==='アクセ'?'アクセサリー':part==='ワンピ'?'ワンピース':part,user_id:user.id,outfit_path,outfit_public_path,qr_path};
+   const quantityInput=row.querySelector('[data-quantity]');const quantity=bundleBase.is_owned===false?0:Math.max(1,Math.min(9999,Number.parseInt(quantityInput?.value||'1',10)||1));
+   const payload={...bundleBase,name,part_type:part==='アクセ'?'アクセサリー':part==='ワンピ'?'ワンピース':part,user_id:user.id,outfit_path,outfit_public_path,qr_path,quantity};
    delete payload.id;delete payload.created_at;delete payload.updated_at;
    const result=await sb.from('coord_entries').insert(payload).select().single();if(result.error)throw result.error;
   }
@@ -398,12 +401,28 @@ $('closeModal').onclick=closeQr;$('modal').onclick=e=>{if(e.target===$('modal'))
 function edit(x,fromView='cardsPanel'){editReturnView=fromView;showView('entryPanel');$('entryId').value=x.id;$('game').value=x.game;$('name').value=x.name;$('setName').value=x.set_name||x.name;$('accessoryOptional').checked=x.accessory_optional===true;fillWaves($('wave'),$('game').value,x.wave||'');$('partType').value=x.part_type||'未分類';fillRarities(x.rarity||'');$('cardNumber').value=x.card_number||'';$('typeName').value=x.type_name||'';$('pattern').value=x.pattern||'';renderPatternDetails(x.pattern_details||[]);$('isOwned').value=x.is_owned===false?'false':'true';if($('missingSide'))$('missingSide').value=x.missing_side==='熱望'?'熱望':'求';renderCharacterChoices(characterNamesFromText(x.character_name||''));$('quantity').value=String(x.is_owned===false?0:Number(x.quantity??1));syncOwnedQuantity();$('isFavorite').checked=x.is_favorite===true;$('exchangeRate').value=String(Number(x.exchange_rate)||0);refreshChips();$('notes').value=x.notes||'';$('outfit').value='';$('outfitUrl').value=x.outfit_public_path&&/^https?:\/\//i.test(x.outfit_public_path)?x.outfit_public_path:'';$('qr').value='';$('formTitle').textContent='コーデを編集';$('save').textContent='変更を保存';$('cancel').classList.remove('hidden');$('entryForm').scrollIntoView({behavior:'smooth',block:'start'})}
 async function changeQuantity(x,value){if(x.is_owned===false){msg('appMsg','持っていないコーデの所持数は0に固定されています。','');return}value=Math.max(1,Math.min(9999,Number(value)||1));const {error}=await sb.from('coord_entries').update({quantity:value,is_owned:true}).eq('id',x.id);if(error){msg('appMsg','所持数の更新失敗：'+error.message,'error');return}x.quantity=value;x.is_owned=true;render();if(closetCharacter)renderClosetCards()}
 async function remove(x){if(!confirm('「'+x.name+'」を削除しますか？画像も削除されます。'))return;let {error}=await sb.from('coord_entries').delete().eq('id',x.id);if(error){msg('appMsg','削除失敗：'+error.message,'error');return}let p=[x.outfit_path,x.qr_path].filter(Boolean);if(p.length)await sb.storage.from(BUCKET).remove(p);if(x.outfit_public_path)await sb.storage.from(PUBLIC_OUTFIT_BUCKET).remove([x.outfit_public_path]);msg('appMsg','削除しました。','success');await load()}
+function renderUnregistered(){
+ const root=$('unregisteredCards');if(!root)return;root.replaceChildren();
+ const list=entries.filter(x=>!x.qr_path);
+ $('unregisteredCount').textContent=`QR未登録：${list.length}件`;
+ $('unregisteredEmpty').classList.toggle('hidden',list.length>0);
+ for(const x of list){
+  const card=document.createElement('article');card.className='card';
+  const body=document.createElement('div');body.className='cardbody';
+  const tag=document.createElement('span');tag.className='tag';tag.textContent=x.game;
+  const title=document.createElement('div');title.className='ctitle';title.textContent=x.name;
+  const meta=document.createElement('div');meta.className='meta';meta.textContent=[x.part_type||'未分類',x.set_name?'まとめるコーデ：'+x.set_name:'',x.is_owned===false?'未所持':'所持数：'+(x.quantity??1)].filter(Boolean).join(' ・ ');
+  const editBtn=document.createElement('button');editBtn.className='alt';editBtn.textContent='編集してQRを登録';editBtn.onclick=()=>edit(x,'unregisteredPanel');
+  body.append(tag,title,meta,editBtn);card.append(body);root.append(card);
+ }
+}
+
 function refreshListFilters(){const game=filter==='すべて'?'':filter;const rarSel=$('rarityFilter'),oldR=rarSel.value;rarSel.replaceChildren();const ra=document.createElement('option');ra.value='all';ra.textContent='レアリティ：すべて';rarSel.append(ra);const rarities=game?(RARITY_OPTIONS[game]||[]):[...new Set(Object.values(RARITY_OPTIONS).flat())];for(const r of rarities){const o=document.createElement('option');o.value=r;o.textContent=r;rarSel.append(o)}rarSel.value=rarities.includes(oldR)?oldR:'all';const sel=$('waveFilter'),old=sel.value;sel.replaceChildren();const all=document.createElement('option');all.value='all';all.textContent='シリーズ：すべて';sel.append(all);let waves=[...new Set(entries.filter(x=>!game||x.game===game).map(x=>x.wave).filter(Boolean))];if(game==='ワッチャプリマジ！')waves=waves.filter(w=>w==='プロモ'||w.endsWith('章'));else if(game==='アイプリバース')waves=waves.filter(w=>w==='プロモ'||w.endsWith('弾'));waves.sort((a,b)=>a.localeCompare(b,'ja'));for(const w of waves){const o=document.createElement('option');o.value=w;o.textContent=w;sel.append(o)}sel.value=waves.includes(old)?old:'all'}
 function render(){refreshListFilters();renderCore()}
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(t=>t.classList.toggle('active',t===b));render()});$('search').oninput=render;$('sort').onchange=render;$('ownedFilter').onchange=render;$('rarityFilter').onchange=render;$('waveFilter').onchange=render;
 let closetCharacter='';
-function showView(view){for(const id of ['albumSelect','homeNav','setMenu','closetView','entryPanel','setsPanel','cardsPanel','backupPanel','exchangePanel'])$(id).classList.add('hidden');$(view).classList.remove('hidden');try{sessionStorage.setItem('coordCurrentView',view)}catch(e){}window.scrollTo({top:0,behavior:'smooth'})}
-$('goCoordAlbum').onclick=()=>showView('homeNav');$('goExchangeAlbum').onclick=()=>{showView('exchangePanel');loadExchangeEntries()};$('goEntry').onclick=()=>{resetForm();showView('entryPanel')};$('goSets').onclick=()=>showView('setMenu');$('goCards').onclick=()=>{showView('cardsPanel');render()};$('goBackup').onclick=()=>showView('backupPanel');$('goExchange').onclick=()=>{showView('exchangePanel');loadExchangeEntries()};document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>showView('homeNav'));document.querySelectorAll('[data-backsets]').forEach(b=>b.onclick=()=>showView('setMenu'));$('allSetsBtn').onclick=()=>showView('setsPanel');$('closetBtn').onclick=()=>{renderClosetChoices();$('closetChoices').classList.remove('hidden');$('closetChoices').scrollIntoView({behavior:'smooth',block:'nearest'})};
+function showView(view){for(const id of ['albumSelect','homeNav','setMenu','closetView','entryPanel','setsPanel','cardsPanel','unregisteredPanel','backupPanel','exchangePanel'])$(id).classList.add('hidden');$(view).classList.remove('hidden');try{sessionStorage.setItem('coordCurrentView',view)}catch(e){}window.scrollTo({top:0,behavior:'smooth'})}
+$('goCoordAlbum').onclick=()=>showView('homeNav');$('goExchangeAlbum').onclick=()=>{showView('exchangePanel');loadExchangeEntries()};$('goEntry').onclick=()=>{resetForm();showView('entryPanel')};$('goSets').onclick=()=>showView('setMenu');$('goCards').onclick=()=>{showView('cardsPanel');render()};$('goUnregistered').onclick=()=>{renderUnregistered();showView('unregisteredPanel')};$('goBackup').onclick=()=>showView('backupPanel');$('goExchange').onclick=()=>{showView('exchangePanel');loadExchangeEntries()};document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>showView('homeNav'));document.querySelectorAll('[data-backsets]').forEach(b=>b.onclick=()=>showView('setMenu'));$('allSetsBtn').onclick=()=>showView('setsPanel');$('closetBtn').onclick=()=>{renderClosetChoices();$('closetChoices').classList.remove('hidden');$('closetChoices').scrollIntoView({behavior:'smooth',block:'nearest'})};
 async function saveSetCharacters(g,names,button){if(!user)return;button.disabled=true;const payload={user_id:user.id,game:g.game,set_name:g.name,character_names:names};const result=await sb.from('coord_set_closets').upsert(payload,{onConflict:'user_id,game,set_name'}).select().single();button.disabled=false;if(result.error){msg('appMsg','マイキャラ割り当ての保存失敗：'+result.error.message+'（先にSQL設定を実行してください）','error');return}const i=setClosets.findIndex(x=>x.game===g.game&&x.set_name===g.name);if(i>=0)setClosets[i]=result.data;else setClosets.push(result.data);msg('appMsg','完成コーデの割り当てを保存しました。','success');render();renderClosetChoices();if(closetCharacter)renderClosetCards()}
 function renderClosetChoices(){const root=$('closetChoices');if(!root)return;root.replaceChildren();const names=knownCharacterNames();if(!names.length){const p=document.createElement('p');p.className='muted';p.textContent='コーデ登録時または完成コーデ一覧でマイキャラ名を登録すると、ここにクローゼットが作られます。';root.append(p);return}for(const name of names){const b=document.createElement('button');b.className='alt';b.textContent=name+'のクローゼット';b.onclick=()=>{closetCharacter=name;renderClosetCards();showView('closetView')};root.append(b)}}
 function renderClosetCards(){
