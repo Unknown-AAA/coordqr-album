@@ -74,11 +74,44 @@ async function toggleInterest(id,button){button.disabled=true;try{const active=!
 let data={requests:[],manual_offers:[],owned_offers:[]},canOffer=new Set(),want=new Set(),providedQty=new Map(),wantedQty=new Map(),wantedPatternChoice=new Map();let flowMode='exchange',selectedMarket='Yahoo!フリマ';
 function hideAll(){for(const id of ['intro','buyAppStep','requestStep','offerStep','confirmStep','resultStep','sharedResult','errorPanel'])$(id).classList.add('hidden')}
 function showCardDetail(x,kind){const root=$('detailContent');root.replaceChildren();if(x.image_url){const im=document.createElement('img');im.src=x.image_url;im.alt=x.name||'カード画像';root.append(im)}const rows=[['求・熱望・譲',kind==='offer'?'譲':(x.side||'求')],['ジャンル',x.game],['コーデ名',x.name],['レート数',String(Number(x.rate)||0)],['枚数',String(Number(x.quantity)||1)],['キャラクター',x.character_name],['レアリティ',x.rarity],['シリーズ',x.series],['パーツ',x.part_type],['タイプ',x.type_name],['柄詳細',Array.isArray(x.pattern_details)?x.pattern_details.map(d=>d.pattern).join('、'):''],['曲',x.song],['メモ',x.notes]];for(const [label,value] of rows){if(!value)continue;const row=document.createElement('p');row.style.cssText='margin:8px 0;line-height:1.6';const b=document.createElement('strong');b.textContent=label+'：';row.append(b,document.createTextNode(value));root.append(row)}$('detailTitle').textContent=x.name||'カード詳細';$('cardDetail').showModal()}
+function normalizePatternName(name){
+ return String(name||'').trim()==='ひまり、みつき固定柄'?'固定柄':String(name||'').trim();
+}
+function parsePatternDetailsValue(value){
+ if(Array.isArray(value))return value;
+ if(typeof value==='string'&&value.trim()){
+  try{const parsed=JSON.parse(value);if(Array.isArray(parsed))return parsed;}catch{}
+ }
+ return [];
+}
+function getPatternDetailsForDisplay(x){
+ // RPCから配列で返る形式を優先し、旧保存形式の pattern / type_name に
+ // JSON文字列として残っている場合も読み取る。
+ for(const value of [x?.pattern_details,x?.pattern,x?.type_name]){
+  const parsed=parsePatternDetailsValue(value);
+  if(parsed.length)return parsed;
+ }
+ return [];
+}
+function getPatternDetailQuantity(d){
+ const characters=Array.isArray(d?.characters)?d.characters:[];
+ // キャラクター別内訳が1件以上ある場合だけ、その合計を優先する。
+ // 空配列の場合は柄自体の quantity を使う。
+ if(characters.length){
+  return characters.reduce((sum,c)=>sum+Math.max(0,Number(c?.quantity)||0),0);
+ }
+ return Math.max(0,Number(d?.quantity)||0);
+}
 function patternDetailLines(x){
- const details=Array.isArray(x.pattern_details)?x.pattern_details:[];
+ const details=getPatternDetailsForDisplay(x);
  if(!details.length)return null;
- const total=details.reduce((sum,d)=>sum+(Array.isArray(d.characters)?d.characters.reduce((a,c)=>a+Math.max(0,Number(c.quantity)||0),0):Math.max(0,Number(d.quantity)||0)),0);
- const lines=details.map(d=>{const n=Array.isArray(d.characters)?d.characters.reduce((a,c)=>a+Math.max(0,Number(c.quantity)||0),0):Math.max(0,Number(d.quantity)||0);return `${d.pattern}：${n}枚${Array.isArray(d.characters)&&d.characters.length?'（'+d.characters.filter(c=>c.name).map(c=>c.name+' '+(Number(c.quantity)||0)+'枚').join('・')+'）':''}`});
+ const total=details.reduce((sum,d)=>sum+getPatternDetailQuantity(d),0);
+ const lines=details.map(d=>{
+  const n=getPatternDetailQuantity(d);
+  const characters=Array.isArray(d.characters)?d.characters.filter(c=>c&&c.name):[];
+  const characterText=characters.length?'（'+characters.map(c=>c.name+' '+Math.max(0,Number(c.quantity)||0)+'枚').join('・')+'）':'';
+  return `${normalizePatternName(d.pattern)}：${n}枚${characterText}`;
+ });
  return {total,lines};
 }
 function patternChoiceControl(x){
@@ -109,19 +142,18 @@ function makeCard(x,kind,selected,setter,isMyInterest=false){
 const filterState={request:{q:'',side:'all',game:'all',rarity:'all',series:'all',part:'all',type:'all',character:'all',song:'all'},offer:{q:'',game:'all',rarity:'all',series:'all',part:'all',type:'all',character:'all',song:'all'}};
 function currentFilterItems(items,state){return items.filter(x=>(state.game==='all'||x.game===state.game)&&(state.side==='all'||(x.side||'求')===state.side));}
 function makeFilters(rootId,kind,items){
- const root=$(rootId);root.replaceChildren();const state=filterState[kind];
+ const root=$(rootId);root.replaceChildren();const state=filterState[kind==='offer'?'offer':'request'];
  const q=document.createElement('input');q.type='search';q.placeholder='カード名・メモ・キャラクター・遊べる曲を検索';q.value=state.q;q.oninput=()=>{state.q=q.value;renderList(kind==='request'?'requests':'offers',kind==='request'?'requestsEmpty':'offersEmpty',items,kind==='offer'?'offer':'request',kind==='request'?canOffer:want,kind==='request'?canOffer:want)};root.append(q);
  const defs=[...(kind==='request'?[['side','区分','side']]:[]),['game','ジャンル','game'],['rarity','レアリティ','rarity'],['series','シリーズ','series'],['part','パーツ','part_type'],['type','タイプ','type_name'],['character','キャラクター','character_name'],['song','遊べる曲','song']];
+ const genreItems=items.filter(x=>(state.game==='all'||x.game===state.game)&&(kind!=='request'||state.side==='all'||(x.side||'求')===state.side));
  for(const [key,label,field] of defs){
-  const base=items.filter(x=>(key==='game'||state.game==='all'||x.game===state.game)&&(key==='side'||kind!=='request'||state.side==='all'||(x.side||'求')===state.side));
-  // ジャンルごとに実データが存在しない項目はフィルター自体を表示しない
-  const scoped=base.filter(x=>defs.every(([other,,otherField])=>other===key||other==='game'||other==='side'||state[other]==='all'||String(x[otherField]||'')===String(state[other])));
+  const scoped=genreItems.filter(x=>defs.every(([other,,otherField])=>other===key||other==='game'||other==='side'||state[other]==='all'||String(x[otherField]??'')===String(state[other])));
   const vals=[...new Set(scoped.map(x=>x[field]).filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(String))].sort((a,b)=>a.localeCompare(b,'ja'));
+  // ジャンル内に実データがない項目は選択肢ごと非表示にする。
   if(key!=='game'&&key!=='side'&&vals.length===0){state[key]='all';continue}
-  if(key==='song'&&state.game!=='all'&&['ワッチャプリマジ！','アイプリバース'].includes(state.game)){state.song='all';continue}
-  const sel=document.createElement('select');sel.dataset.filterKey=key;const opt=document.createElement('option');opt.value='all';opt.textContent=label+'：すべて';sel.append(opt);for(const v of vals){const o=document.createElement('option');o.value=v;o.textContent=v;sel.append(o)}
+  const sel=document.createElement('select');sel.dataset.filterKey=key;sel.setAttribute('aria-label',label);const opt=document.createElement('option');opt.value='all';opt.textContent=label+'：すべて';sel.append(opt);for(const v of vals){const o=document.createElement('option');o.value=v;o.textContent=v;sel.append(o)}
   if(vals.includes(state[key]))sel.value=state[key];else{state[key]='all';sel.value='all'}
-  sel.onchange=()=>{state[key]=sel.value;if(key==='game'&&['ワッチャプリマジ！','アイプリバース'].includes(state.game))state.song='all';makeFilters(rootId,kind,items);renderList(kind==='request'?'requests':'offers',kind==='request'?'requestsEmpty':'offersEmpty',items,kind==='offer'?'offer':'request',kind==='request'?canOffer:want,kind==='request'?canOffer:want)};root.append(sel);
+  sel.onchange=()=>{state[key]=sel.value;if(key==='game'){for(const k of ['rarity','series','part','type','character','song'])state[k]='all'}makeFilters(rootId,kind,items);renderList(kind==='request'?'requests':'offers',kind==='request'?'requestsEmpty':'offersEmpty',items,kind==='offer'?'offer':'request',kind==='request'?canOffer:want,kind==='request'?canOffer:want)};root.append(sel);
  }
 }
 function sortItems(items,kind){const mode=$(kind==='request'?'requestSort':'offerSort')?.value||'new';return [...items].sort((a,b)=>{const ar=Number(a.rate)||0,br=Number(b.rate)||0;switch(mode){case'rateAsc':return ar-br;case'rateDesc':return br-ar;case'name':return String(a.name||'').localeCompare(String(b.name||''),'ja');case'quantityDesc':return (Number(b.quantity)||0)-(Number(a.quantity)||0);case'interestDesc':return (interestCounts.get(String(b.id))||0)-(interestCounts.get(String(a.id))||0);case'old':return new Date(a.created_at||0)-new Date(b.created_at||0);default:return new Date(b.created_at||0)-new Date(a.created_at||0)}})}
@@ -184,24 +216,26 @@ $('confirm').onclick=()=>{
 $('no').onclick=()=>{hideAll();$('offerStep').classList.remove('hidden');if(flowMode==='purchase'){$('offerChart').innerHTML='<h2>買取金額（レシート）</h2><div id="purchaseReceiptLive"></div>';updatePurchaseReceipt();setFloating('purchaseOffer')}else{setFloating('offer')}};
 let purchaseMode='difference';function buildReceipt(mode){const {off,rt,ot}=totals();purchaseMode=mode;const chosen=mode==='all'?off:off;const amount=mode==='all'?ot:Math.max(0,ot-rt);const market=document.querySelector('input[name="market"]:checked')?.value||'Yahoo!フリマ';const shipping=market==='ラクマ'?150:160;const root=$('receipt');root.replaceChildren();root.classList.remove('hidden');const heading=document.createElement('h3');heading.textContent=mode==='all'?'買取明細（全て買取）':'買取明細（レート差分のみ）';root.append(heading);for(const x of chosen){const p=document.createElement('div');p.className='receipt-line';p.textContent=`${x.name} × ${wantedQty.get(String(x.id))||1} ／ ${Number(x.rate)||0} × ${wantedQty.get(String(x.id))||1} = ${(Number(x.rate)||0)*(wantedQty.get(String(x.id))||1)}`;root.append(p)}const sub=document.createElement('div');sub.className='receipt-line';sub.textContent=`カード代金：${amount}`;root.append(sub);const ship=document.createElement('div');ship.className='receipt-line';ship.textContent=`送料（${market}）：${shipping}円`;root.append(ship);const total=document.createElement('div');total.className='receipt-total';total.textContent=`合計：${amount+shipping}円`;root.append(total);$('purchaseConfirmText').textContent='こちらの内容でよろしいですか？';}
 $('buyStart').onclick=()=>{$('buyPanel').classList.remove('hidden');$('buyOffer').classList.add('hidden');buildReceipt('difference')};$('buyBack').onclick=()=>{$('buyOffer').classList.add('hidden')};$('purchaseBack').onclick=()=>{$('buyPanel').classList.add('hidden');$('buyOffer').classList.remove('hidden')};$('buyDifference').onclick=()=>buildReceipt('difference');$('buyAll').onclick=()=>buildReceipt('all');document.querySelectorAll('input[name="market"]').forEach(r=>r.addEventListener('change',()=>buildReceipt(purchaseMode)));
-$('purchaseYes').onclick=()=>{const {req,off,rt,ot}=totals();const market=document.querySelector('input[name="market"]:checked')?.value||'Yahoo!フリマ';const shipping=market==='ラクマ'?150:160;const cardAmount=purchaseMode==='all'?ot:Math.max(0,ot-rt);const payload={created_at:new Date().toISOString(),purchase:true,market,shipping,card_amount:cardAmount,total:cardAmount+shipping,purchase_mode:purchaseMode,provided:req.map(x=>clean(x,providedQty.get(String(x.id))||1)),wanted:off.map(x=>clean(x,wantedQty.get(String(x.id))||1))};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',encode(payload));$('resultUrl').value=u.href;hideAll();$('resultStep').classList.remove('hidden');setFloating('')};
+$('purchaseYes').onclick=async()=>{const {req,off,rt,ot}=totals();const market=document.querySelector('input[name="market"]:checked')?.value||'Yahoo!フリマ';const shipping=market==='ラクマ'?150:160;const cardAmount=purchaseMode==='all'?ot:Math.max(0,ot-rt);const payload={created_at:new Date().toISOString(),purchase:true,market,shipping,card_amount:cardAmount,total:cardAmount+shipping,purchase_mode:purchaseMode,provided:req.map(x=>clean(x,providedQty.get(String(x.id))||1)),wanted:off.map(x=>clean(x,wantedQty.get(String(x.id))||1))};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',await encode(payload));$('resultUrl').value=u.href;hideAll();$('resultStep').classList.remove('hidden');setFloating('')};
 $('floatBack').onclick=()=>{if(flowMode==='purchase'&&$('offerStep').classList.contains('hidden')){hideAll();$('buyAppStep').classList.remove('hidden');setFloating('')}else if($('requestStep').classList.contains('hidden')){$('backRequests').click()}else{hideAll();$('intro').classList.remove('hidden');setFloating('')}};$('floatNext').onclick=()=>$('toOffers').click();$('floatConfirm').onclick=()=>$('confirm').click();
-function encode(obj){const bytes=new TextEncoder().encode(JSON.stringify(obj));let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-function decode(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s),bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes))}
-$('yes').onclick=()=>{
- if(flowMode==='purchase'){const items=offers().filter(x=>want.has(String(x.id)));const subtotal=items.reduce((a,x)=>a+(Number(x.rate)||0)*(wantedQty.get(String(x.id))||1),0);const shipping=selectedMarket==='ラクマ'?150:160;const payload={created_at:new Date().toISOString(),purchase:true,market:selectedMarket,shipping,card_amount:subtotal,total:subtotal+shipping,purchase_mode:'all',wanted:items.map(x=>clean(x,wantedQty.get(String(x.id))||1))};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',encode(payload));$('resultUrl').value=u.href;hideAll();$('resultStep').classList.remove('hidden');setFloating('');return}
+function bytesToBase64Url(bytes){let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function base64UrlToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s);return Uint8Array.from(bin,c=>c.charCodeAt(0))}
+async function encode(obj){const bytes=new TextEncoder().encode(JSON.stringify(obj));if(typeof CompressionStream!=='undefined'&&typeof DecompressionStream!=='undefined'){const stream=new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'));const compressed=new Uint8Array(await new Response(stream).arrayBuffer());return 'gz.'+bytesToBase64Url(compressed)}return 'raw.'+bytesToBase64Url(bytes)}
+async function decode(s){if(s.startsWith('gz.')){if(typeof DecompressionStream==='undefined')throw Error('このブラウザは圧縮URLの読み込みに対応していません。');const bytes=base64UrlToBytes(s.slice(3));const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));const raw=new Uint8Array(await new Response(stream).arrayBuffer());return JSON.parse(new TextDecoder().decode(raw))}if(s.startsWith('raw.'))return JSON.parse(new TextDecoder().decode(base64UrlToBytes(s.slice(4))));return JSON.parse(new TextDecoder().decode(base64UrlToBytes(s)))}
+$('yes').onclick=async()=>{
+ if(flowMode==='purchase'){const items=offers().filter(x=>want.has(String(x.id)));const subtotal=items.reduce((a,x)=>a+(Number(x.rate)||0)*(wantedQty.get(String(x.id))||1),0);const shipping=selectedMarket==='ラクマ'?150:160;const payload={created_at:new Date().toISOString(),purchase:true,market:selectedMarket,shipping,card_amount:subtotal,total:subtotal+shipping,purchase_mode:'all',wanted:items.map(x=>clean(x,wantedQty.get(String(x.id))||1))};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',await encode(payload));$('resultUrl').value=u.href;hideAll();$('resultStep').classList.remove('hidden');setFloating('');return}
  const req=data.requests.filter(x=>canOffer.has(String(x.id))),off=offers().filter(x=>want.has(String(x.id)));
  const diff=Math.abs(req.reduce((a,x)=>a+(Number(x.rate)||0)*(providedQty.get(String(x.id))||1),0)-off.reduce((a,x)=>a+(Number(x.rate)||0)*(wantedQty.get(String(x.id))||1),0));if(diff>100){alert('レート差が±100以内に収まるように選び直してください');return}const payload={created_at:new Date().toISOString(),provided:req.map(x=>clean(x,providedQty.get(String(x.id))||1)),wanted:off.map(x=>clean(x,wantedQty.get(String(x.id))||1))};
- const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',encode(payload));$('resultUrl').value=u.href;
+ const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('selection',await encode(payload));$('resultUrl').value=u.href;
  hideAll();$('resultStep').classList.remove('hidden')
 };
-function clean(x,qty=1){return {name:x.name,game:x.game,character_name:x.character_name||'',rarity:x.rarity||'',series:x.series||'',part_type:x.part_type||'',type_name:x.type_name||'',pattern_details:x.pattern_details||[],wanted_pattern:wantedPatternChoice.get(String(x.id))||'柄不問',quantity:qty,rate:Number(x.rate)||0,image_url:x.image_url||null}}
+function clean(x,qty=1){return {name:x.name||'',game:x.game||'',wanted_pattern:wantedPatternChoice.get(String(x.id))||'柄不問',quantity:qty,rate:Number(x.rate)||0}}
 $('copyResult').onclick=async()=>{try{await navigator.clipboard.writeText($('resultUrl').value);alert('URLをコピーしました')}catch{$('resultUrl').select();alert('URL欄を選択してコピーしてください')}};
 $('restart').onclick=()=>{canOffer.clear();want.clear();providedQty.clear();wantedQty.clear();wantedPatternChoice.clear();for(const k of ['request','offer'])filterState[k]={q:'',side:'all',game:'all',rarity:'all',series:'all',part:'all',type:'all',character:'all',song:'all'};hideAll();$('intro').classList.remove('hidden')};
 function showSummary(payload){const root=$('sharedContent');root.replaceChildren();const req=payload.provided||[],off=payload.wanted||[];const sum=(xs)=>xs.reduce((a,x)=>a+(Number(x.rate)||0)*(Number(x.quantity)||1),0);const rt=sum(req),ot=sum(off);const p=document.createElement('p');p.className='notice';p.textContent=`提供側レート合計：${rt} ／ 希望側レート合計：${ot} ／ 差：${Math.abs(rt-ot)}`;root.append(p,itemSummary(req,'こちらが提供できるカード'),itemSummary(off,'こちらが希望するカード'));if(payload.purchase){const receipt=document.createElement('div');receipt.className='panel';const h=document.createElement('h2');h.textContent='買取内容';const detail=document.createElement('p');detail.textContent=`買取方法：${payload.purchase_mode==='all'?'全て買取':'レート差分のみ買取'} ／ アプリ：${payload.market}`;const total=document.createElement('p');total.className='notice';total.textContent=`カード代金：${payload.card_amount}円 ＋ 送料：${payload.shipping}円 ＝ 合計：${payload.total}円`;receipt.append(h,detail,total);root.append(receipt)}}
 async function init(){
  const params=new URLSearchParams(location.search);
- if(params.has('selection')){try{const payload=decode(params.get('selection'));hideAll();$('sharedResult').classList.remove('hidden');showSummary(payload)}catch{hideAll();$('errorPanel').classList.remove('hidden');$('errorText').textContent='交換内容URLを読み取れませんでした。'}return}
+ if(params.has('selection')){try{const payload=await decode(params.get('selection'));hideAll();$('sharedResult').classList.remove('hidden');showSummary(payload)}catch{hideAll();$('errorPanel').classList.remove('hidden');$('errorText').textContent='交換内容URLを読み取れませんでした。'}return}
  const token=params.get('token');if(!token){hideAll();$('errorPanel').classList.remove('hidden');return}
  const {data:res,error}=await sb.rpc('get_public_exchange_album',{share_token:token});
  if(error||!res?.ok){hideAll();$('errorPanel').classList.remove('hidden');$('errorText').textContent=res?.message||'共有情報を取得できませんでした。';return}
