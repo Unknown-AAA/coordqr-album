@@ -24,8 +24,16 @@ header{padding:23px 16px;background:linear-gradient(135deg,#dff6ff,#f8fdff 65%,#
 <div class="actions"><button id="login">ログイン</button><button id="signup" class="alt">新規登録</button><button id="reset" class="alt">パスワード再設定</button></div><div id="authMsg" class="notice hidden"></div></section>
 <section id="app" class="hidden">
 <div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h2 style="margin:0 0 4px">マイアルバム</h2><div id="who" class="status"></div></div><button id="logout" class="alt">ログアウト</button></div><div id="appMsg" class="notice hidden"></div><p class="muted">データと画像は非公開設定のクラウドに保存されます。通信が必要です。大切な情報は定期的にバックアップしてください。</p></div>
+<section id="helperToolPanel" class="panel">
+<h2>補助ツールへの接続</h2>
+<p class="muted">Macで補助ツールを起動したときに表示されたトークンを入力してね。トークンはこのページを開いている間だけブラウザのメモリに保持し、保存はしません。</p>
+<label for="helperToken">補助ツールのトークン</label>
+<input id="helperToken" type="password" autocomplete="off" placeholder="サーバー起動時に表示されたトークン">
+<div class="actions"><button type="button" id="checkHelper">接続を確認</button><button type="button" id="clearHelperToken" class="alt">トークンを消す</button></div>
+<div id="helperMsg" class="notice hidden"></div>
+</section>
 <div id="albumSelect" class="panel"><h2>アルバムを選んでね</h2><p class="muted">普段のコレクション管理と、交換用のページを切り替えられます。</p><div class="navgrid"><button class="navbtn" id="goCoordAlbum">✧ コーデアルバム</button><button class="navbtn" id="goExchangeAlbum">♡ 交換用アルバム</button><button class="navbtn" id="goUnregisteredFromHome">▧ QR未登録一覧</button></div></div>
-<div id="homeNav" class="panel hidden"><h2>コーデアルバム</h2><div id="ownedTotalPanel" class="panel" style="margin:12px 0;padding:16px"><div class="muted" style="font-size:.9rem">現在所持しているカードの合計枚数</div><div id="ownedTotalCount" style="font-size:2rem;font-weight:800;line-height:1.3">0枚</div><div class="muted" style="font-size:.78rem">所持中のカードの所持数を合計（未所持カードは除外）</div></div><div class="navgrid"><button class="navbtn" id="goEntry">✧ コーデを登録</button><button class="navbtn" id="goSets">♡ 完成コーデ一覧</button><button class="navbtn" id="goCards">▦ コーデ一覧</button><button class="navbtn" id="goCatalog">▤ コーデ図鑑</button><button class="navbtn" id="goUnregistered">▧ QR未登録一覧</button><button class="navbtn" id="goBackup">☁ テキストバックアップ</button><button class="navbtn" id="goExchange">♡ 交換用アルバム</button></div></div>
+<div id="homeNav" class="panel hidden"><h2>コーデアルバム</h2><div class="navgrid"><button class="navbtn" id="goEntry">✧ コーデを登録</button><button class="navbtn" id="goSets">♡ 完成コーデ一覧</button><button class="navbtn" id="goCards">▦ コーデ一覧</button><button class="navbtn" id="goCatalog">▤ コーデ図鑑</button><button class="navbtn" id="goUnregistered">▧ QR未登録一覧</button><button class="navbtn" id="goBackup">☁ テキストバックアップ</button><button class="navbtn" id="goExchange">♡ 交換用アルバム</button></div></div>
 <div id="setMenu" class="panel hidden"><h2>完成コーデ一覧</h2><p class="muted">表示方法を選んでね。</p><div class="subnav"><button id="allSetsBtn">全てのコーデを見る</button><button id="closetBtn" class="alt">クローゼットを見る</button></div><div id="closetChoices" class="subnav hidden"></div><button class="alt" data-home>メニューに戻る</button></div>
 <div id="closetView" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 id="closetTitle" style="margin:0">クローゼット</h2><button class="alt" data-home>メニューに戻る</button></div><div id="closetCards" class="cards"></div><div id="closetEmpty" class="empty hidden">このキャラクターのコーデはまだありません。</div></div>
 <section id="entryPanel" class="panel hidden"><div class="actions" style="justify-content:space-between;align-items:center"><h2 id="formTitle" style="margin:0">＋ コーデを登録</h2><button class="alt" data-home>メニューに戻る</button></div><form id="entryForm"><input id="entryId" type="hidden">
@@ -80,6 +88,25 @@ const SUPABASE_URL='https://bwxavexarxvyiidokyms.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_f3AV7dlraKufoG6qhWL5xA_eRvdA9OI';
 const BUCKET='coord-images';
 const PUBLIC_OUTFIT_BUCKET='coord-outfit-public';
+const HELPER_URL='https://127.0.0.1:8765';
+let helperToken='';
+async function checkHelperTool(){
+ const input=$('helperToken');
+ const token=input.value.trim();
+ if(!token){msg('helperMsg','トークンを入力してください。','error');return}
+ msg('helperMsg','接続を確認しています…');
+ try{
+  const res=await fetch(HELPER_URL+'/auth-check',{method:'POST',headers:{'X-Upload-Token':token}});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error(data.error||'認証に失敗しました');
+  helperToken=token;
+  input.value='';
+  msg('helperMsg','補助ツールに接続できました。トークンはこのページを開いている間だけブラウザのメモリに保持します。','success');
+ }catch(e){
+  helperToken='';
+  msg('helperMsg','接続できませんでした：'+(e?.message||'不明なエラー'),'error');
+ }
+}
 const $=id=>document.getElementById(id);
 let sb=null,user=null,entries=[],setClosets=[],filter='すべて',busy=false,editReturnView='cardsPanel';
 const WAVE_OPTIONS={'ワッチャプリマジ！':['１章','２章','３章','４章','５章','６章','スタジオ１・２章','スタジオ３・４章','スタジオ５・６章','スタジオ７・８章','スタジオ９章','スタジオ１０章','プロモ'],'アイプリバース':['ひみつ１弾','ひみつ２弾','ひみつ３弾','ひみつ４弾','ひみつ５弾','ひみつ６弾','リング１弾','リング２弾','リング３弾','リング４弾','リング５弾','リング６弾','おねがい１弾','おねがい２弾','おねがい３弾','おねがい４弾','おねがい５弾','おねがい６弾','プロモ','ミルフィー']};
@@ -115,6 +142,8 @@ async function auth(kind){if(!sb||!authReady){msg('authMsg','認証機能を準�
 $('login').addEventListener('click',()=>auth('login'));
 $('signup').addEventListener('click',()=>auth('signup'));
 $('reset').addEventListener('click',()=>auth('reset'));
+$('checkHelper').addEventListener('click',checkHelperTool);
+$('clearHelperToken').addEventListener('click',()=>{helperToken='';$('helperToken').value='';msg('helperMsg','トークンを消しました。','');});
 initAuth();
 $('logout').onclick=async()=>{const {error}=await sb.auth.signOut();if(error)msg('appMsg',error.message,'error');else showAuth()};
 async function signed(path){if(!path)return '';if(/^https?:\/\//i.test(path))return path;let {data,error}=await sb.storage.from(BUCKET).createSignedUrl(path,3600);return error?'':data.signedUrl}
@@ -234,7 +263,7 @@ function renderQrBatch(){
  qrBatchFiles.forEach((file,i)=>{const row=document.createElement('div');row.className='actions';const label=document.createElement('span');label.textContent=`QR ${i+1}：${file.name}`;const target=document.createElement('select');target.dataset.qrIndex=String(i);const current=document.createElement('option');current.value='';current.textContent='割り当て先を選択';target.append(current);
  const formTarget=document.createElement('option');formTarget.value='__current_form__';formTarget.textContent='現在入力中のコーデ';target.append(formTarget);
  [...$('bundleRows')?.children||[]].forEach((row,j)=>{const o=document.createElement('option');o.value='__bundle__'+j;o.textContent='追加パーツ：'+row.dataset.part;target.append(o)});
- entries.filter(entry=>!entry.qr_path&&entry.is_owned!==false&&Math.max(0,Number(entry.quantity??1)||0)>0).slice().sort((a,b)=>{const ta=Date.parse(a.created_at||''),tb=Date.parse(b.created_at||'');if(!Number.isFinite(ta)&&!Number.isFinite(tb))return 0;if(!Number.isFinite(ta))return 1;if(!Number.isFinite(tb))return -1;return ta-tb}).forEach(entry=>{const o=document.createElement('option');o.value=entry.id;o.textContent=entry.name;target.append(o)});const remove=document.createElement('button');remove.type='button';remove.className='del';remove.textContent='削除';remove.onclick=()=>{qrBatchFiles.splice(i,1);renderQrBatch()};row.append(label,target,remove);root.append(row)});
+ entries.filter(entry=>!entry.qr_path).forEach(entry=>{const o=document.createElement('option');o.value=entry.id;o.textContent=entry.name;target.append(o)});const remove=document.createElement('button');remove.type='button';remove.className='del';remove.textContent='削除';remove.onclick=()=>{qrBatchFiles.splice(i,1);renderQrBatch()};row.append(label,target,remove);root.append(row)});
 }
 $('unregisteredClearQrBatch')?.addEventListener('click',()=>{qrBatchFiles=[];renderQrBatch()});
 $('unregisteredApplyQrBatch')?.addEventListener('click',async()=>{
@@ -390,7 +419,7 @@ function renderCore(){
  for(let x of list){let c=document.createElement('article');c.className='card';let ts=document.createElement('div');ts.className='thumbs';let oi=thumb(x.outfit_url,'コーデ画像なし');ts.append(oi);let b=document.createElement('div');b.className='cardbody';let tag=document.createElement('span');tag.className='tag';tag.textContent=x.game;let t=document.createElement('div');t.className='ctitle';t.textContent=x.name;let n=document.createElement('div');n.className='notes';n.textContent=x.notes||'メモなし';let m=document.createElement('div');m.className='meta';m.textContent=[x.character_name?'マイキャラ：'+x.character_name:'',x.part_type&&x.part_type!=='未分類'?x.part_type:'',x.rarity?'レアリティ：'+x.rarity:'',x.wave?'弾／シリーズ：'+x.wave:'',x.card_number?'番号：'+x.card_number:'',x.is_owned===false?'持っていない':'所持している'].filter(Boolean).join(' ・ ');let qty=document.createElement('div');qty.className='qty';let qlabel=document.createElement('span');qlabel.className='smalllabel';qlabel.textContent='所持数';let qminus=document.createElement('button');qminus.className='alt';qminus.textContent='−';qminus.onclick=()=>changeQuantity(x,Math.max(1,(Number(x.quantity)||1)-1));let qnum=document.createElement('strong');qnum.textContent=String(Number(x.quantity??1));let qplus=document.createElement('button');qplus.textContent='+';qplus.onclick=()=>changeQuantity(x,Math.min(9999,(Number(x.quantity)||0)+1));qty.append(qlabel,qminus,qnum,qplus);let a=document.createElement('div');a.className='cardactions';let fav=document.createElement('button');fav.className='alt';fav.textContent=x.is_favorite?'♥ お気に入り':'♡ お気に入り';fav.onclick=()=>toggleFavorite(x);let qb=document.createElement('button');qb.textContent='QR拡大';qb.disabled=!x.qr_url;qb.onclick=()=>openQr(x);let eb=document.createElement('button');eb.className='alt';eb.textContent='編集';eb.onclick=()=>edit(x,'cardsPanel');let db=document.createElement('button');db.className='del';db.textContent='削除';db.onclick=()=>remove(x);a.append(fav,qb,eb,db);b.append(tag,t,n,m,qty,a);c.append(ts,b);$('cards').append(c)}renderSets();renderClosetChoices();
 }
 
-async function changeCatalogQuantity(x,value){if(x.is_owned===false)return;value=Math.max(1,Math.min(9999,Number(value)||1));const {error}=await sb.from('coord_entries').update({quantity:value,is_owned:true}).eq('id',x.id);if(error){msg('appMsg','所持数の更新失敗：'+error.message,'error');return}x.quantity=value;x.is_owned=true;updateOwnedTotal();renderCatalog()}
+async function changeCatalogQuantity(x,value){if(x.is_owned===false)return;value=Math.max(1,Math.min(9999,Number(value)||1));const {error}=await sb.from('coord_entries').update({quantity:value,is_owned:true}).eq('id',x.id);if(error){msg('appMsg','所持数の更新失敗：'+error.message,'error');return}x.quantity=value;x.is_owned=true;renderCatalog()}
 function renderCatalog(){
  const root=$('catalogCards');if(!root)return;root.replaceChildren();
  const q=($('catalogSearch')?.value||'').trim().toLocaleLowerCase('ja');const game=$('catalogGame')?.value||'all';
@@ -443,8 +472,7 @@ function renderUnregistered(){
 }
 
 function refreshListFilters(){const game=filter==='すべて'?'':filter;const rarSel=$('rarityFilter'),oldR=rarSel.value;rarSel.replaceChildren();const ra=document.createElement('option');ra.value='all';ra.textContent='レアリティ：すべて';rarSel.append(ra);const rarities=game?(RARITY_OPTIONS[game]||[]):[...new Set(Object.values(RARITY_OPTIONS).flat())];for(const r of rarities){const o=document.createElement('option');o.value=r;o.textContent=r;rarSel.append(o)}rarSel.value=rarities.includes(oldR)?oldR:'all';const sel=$('waveFilter'),old=sel.value;sel.replaceChildren();const all=document.createElement('option');all.value='all';all.textContent='シリーズ：すべて';sel.append(all);let waves=[...new Set(entries.filter(x=>x.is_catalog_only!==true&&(!game||x.game===game)).map(x=>x.wave).filter(Boolean))];if(game==='ワッチャプリマジ！')waves=waves.filter(w=>w==='プロモ'||w.endsWith('章'));else if(game==='アイプリバース')waves=waves.filter(w=>w==='プロモ'||w.endsWith('弾'));waves.sort((a,b)=>a.localeCompare(b,'ja'));for(const w of waves){const o=document.createElement('option');o.value=w;o.textContent=w;sel.append(o)}sel.value=waves.includes(old)?old:'all'}
-function updateOwnedTotal(){const total=entries.reduce((sum,x)=>{if(x.is_owned===false)return sum;return sum+Math.max(0,Number(x.quantity??1)||0)},0);const node=$('ownedTotalCount');if(node)node.textContent=total.toLocaleString('ja-JP')+'枚'}
-function render(){updateOwnedTotal();refreshListFilters();renderCore()}
+function render(){refreshListFilters();renderCore()}
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(t=>t.classList.toggle('active',t===b));render()});$('search').oninput=render;$('sort').onchange=render;$('catalogSearch').oninput=renderCatalog;$('catalogGame').onchange=renderCatalog;$('ownedFilter').onchange=render;$('rarityFilter').onchange=render;$('waveFilter').onchange=render;
 let closetCharacter='';
 function showView(view){for(const id of ['albumSelect','homeNav','setMenu','closetView','entryPanel','setsPanel','cardsPanel','catalogPanel','unregisteredPanel','backupPanel','exchangePanel'])$(id).classList.add('hidden');$(view).classList.remove('hidden');try{sessionStorage.setItem('coordCurrentView',view)}catch(e){}window.scrollTo({top:0,behavior:'smooth'})}
