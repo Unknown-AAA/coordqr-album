@@ -90,7 +90,7 @@ const BUCKET='coord-images';
 const PUBLIC_OUTFIT_BUCKET='coord-outfit-public';
 const HELPER_URL='https://127.0.0.1:8765';
 let helperToken='';
-const R2_PUBLIC_URL='https://pub-e5fdbdbbe6c24f8e834f04d4e9bdaef7.r2.dev';
+const R2_PUBLIC_URL='https://pub-72c9f60e0b4640f9a2d676c764f874bf.r2.dev';
 async function uploadOutfitViaHelper(file){
  if(!helperToken)return null;
  if(file.size>8*1024*1024)throw new Error('画像は8MB以下にしてください。');
